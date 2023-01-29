@@ -6,18 +6,17 @@ const db = new LevelDB("../test/My World/db/");
 
 await db.open();
 
-for await (const key of db){
-  for (const thing of key){
-    try {
-      const { data: nbt } = await NBT.read(thing,{
-        endian: "little",
-        compression: null,
-        isNamed: true,
-        isBedrockLevel: false
-      });
-      if (nbt.identifier === "minecraft:player") console.log(nbt);
-    } catch {}
-  }
-}
+const keys = await getKeys(db);
+console.log(keys);
 
 await db.close();
+
+async function getKeys(db: LevelDB) {
+  const keys: any[] = [];
+
+  for await (const key of db){
+    keys.push(key);
+  }
+
+  return keys;
+}
