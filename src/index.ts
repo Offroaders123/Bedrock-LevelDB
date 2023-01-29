@@ -18,5 +18,5 @@ async function getKeys(db: LevelDB) {
     keys.push(key);
   }
 
-  return keys;
+  return Object.fromEntries(keys);
 }
