@@ -9,13 +9,13 @@ await db.open();
 for await (const key of db){
   for (const thing of key){
     try {
-      const nbt = await NBT.read(thing,{
+      const { data: nbt } = await NBT.read(thing,{
         endian: "little",
         compression: null,
         isNamed: true,
         isBedrockLevel: false
       });
-      console.log(nbt);
+      if (nbt.identifier === "minecraft:player") console.log(nbt);
     } catch {}
   }
 }
