@@ -5,8 +5,8 @@ const db = new LevelDB("../test/My World/db/");
 
 await db.open();
 
-const iterator = db.getIterator();
-
-for await (const key of iterator){
-  console.log(key);
+for await (const key of db){
+  console.log((key as Buffer[]).map(buffer => buffer.toString()),"\n");
 }
+
+await db.close();
