@@ -6,17 +6,17 @@ const db = new LevelDB("../test/My World/db/");
 
 await db.open();
 
-const keys = await getKeys(db);
-console.log(keys);
+const data = await read(db);
+console.log(data);
 
 await db.close();
 
-async function getKeys(db: LevelDB) {
-  const keys: any[] = [];
+async function read(db: LevelDB) {
+  const result: Record<string,any> = {};
 
-  for await (const key of db){
-    keys.push(key);
+  for await (const [key,value] of db){
+    result[key] = value;
   }
 
-  return Object.fromEntries(keys);
+  return result;
 }
