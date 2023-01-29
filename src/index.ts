@@ -2,7 +2,7 @@ import * as fs from "node:fs/promises";
 import { LevelDB } from "leveldb-zlib";
 import * as NBT from "nbtify";
 
-const db = new LevelDB("../test/My World/db/");
+const db = new LevelDB(decodeURI(new URL("../test/My World/db/",import.meta.url).pathname));
 
 await db.open();
 
