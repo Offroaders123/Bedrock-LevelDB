@@ -1,17 +1,30 @@
 import * as fs from "node:fs/promises";
-import { LevelDB } from "leveldb-zlib";
+import type { LevelDB } from "leveldb-zlib";
 import * as NBT from "nbtify";
 
-const db = new LevelDB(decodeURI(new URL("../test/My World/db/",import.meta.url).pathname));
+export type KEY = typeof KEY[keyof typeof KEY];
 
-await db.open();
+export const KEY = {
+  Data3D: 43,
+  ChunkVersion: 44,
+  Data2D: 45,
+  Data2DLegacy: 46,
+  SubChunkPrefix: 47,
+  LegacyTerrain: 48,
+  BlockEntity: 49,
+  Entity: 50,
+  PendingTicks: 51,
+  BlockExtraData: 52,
+  BiomeState: 53,
+  FinalizedState: 54,
+  BorderBlocks: 56,
+  HardCodedSpawnAreas: 57,
+  RandomTicks: 58,
+  Checksums: 59,
+  LegacyChunkVersion: 118
+} as const;
 
-const data = await read(db);
-console.log(data);
-
-await db.close();
-
-async function read(db: LevelDB) {
+export async function read(db: LevelDB) {
   const result: Record<string,any> = {};
 
   for await (const [key,value] of db){
@@ -30,7 +43,7 @@ async function read(db: LevelDB) {
       const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
       const x = view.getInt32(0,true);
       const y = view.getInt32(3,true);
-      const type = view.getUint8(8);
+      const type = view.getUint8(8) as KEY;
       const index = (type === 47) ? view.getUint8(9) : "";
       console.log(x,y,type,index);
     }
