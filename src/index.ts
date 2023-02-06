@@ -16,14 +16,23 @@ async function read(db: LevelDB) {
 
   for await (const [key,value] of db){
     try {
-      result[key] = await NBT.read(value,{
+      // result[key] = 
+      await NBT.read(value,{
         endian: "little",
         compression: null,
         isNamed: true,
         isBedrockLevel: false
       }).then(({ data }) => data);
     } catch {
-      result[key] = value;
+      // result[key] = value;
+      // console.log(key.join(" "));
+
+      const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
+      const x = view.getInt32(0,true);
+      const y = view.getInt32(3,true);
+      const type = view.getUint8(8);
+      const index = (type === 47) ? view.getUint8(9) : "";
+      console.log(x,y,type,index);
     }
   }
 
