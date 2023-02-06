@@ -2,34 +2,32 @@ import * as fs from "node:fs/promises";
 import type { LevelDB } from "leveldb-zlib";
 import * as NBT from "nbtify";
 
-export type KEY = keyof typeof KEY;
-
-export const KEY = {
-  43: "Data3D",
-  44: "Version",
-  45: "Data2D",
-  46: "Data2DLegacy",
-  47: "SubChunkPrefix",
-  48: "LegacyTerrain",
-  49: "BlockEntity",
-  50: "Entity",
-  51: "PendingTicks",
-  52: "LegacyBlockExtraData",
-  53: "BiomeState",
-  54: "FinalizedState",
-  55: "ConversionData",
-  56: "BorderBlocks",
-  57: "HardcodedSpawners",
-  58: "RandomTicks",
-  59: "CheckSums",
-  60: "GenerationSeed",
-  61: "GeneratedPreCavesAndCliffsBlending",
-  62: "BlendingBiomeHeight",
-  63: "MetaDataHash",
-  64: "BlendingData",
-  65: "ActorDigestVersion",
-  118: "LegacyVersion"
-} as const;
+export enum KEY {
+  Data3D = 43,
+  Version = 44,
+  Data2D = 45,
+  Data2DLegacy = 46,
+  SubChunkPrefix = 47,
+  LegacyTerrain = 48,
+  BlockEntity = 49,
+  Entity = 50,
+  PendingTicks = 51,
+  LegacyBlockExtraData = 52,
+  BiomeState = 53,
+  FinalizedState = 54,
+  ConversionData = 55,
+  BorderBlocks = 56,
+  HardcodedSpawners = 57,
+  RandomTicks = 58,
+  CheckSums = 59,
+  GenerationSeed = 60,
+  GeneratedPreCavesAndCliffsBlending = 61,
+  BlendingBiomeHeight = 62,
+  MetaDataHash = 63,
+  BlendingData = 64,
+  ActorDigestVersion = 65,
+  LegacyVersion = 118
+}
 
 export async function read(db: LevelDB) {
   const result: Record<string,any> = {};
