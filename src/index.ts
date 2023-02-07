@@ -33,24 +33,25 @@ export async function read(db: LevelDB) {
   const result: Record<string,any> = {};
 
   for await (const [key,value] of db){
+    const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
+    const x = view.getInt32(0,true);
+    const y = view.getInt32(3,true);
+    const type = view.getUint8(8) as KEY;
+    // const index = (type === 47) ? view.getUint8(9) : "";
+    // console.log(x,y,KEY[type],index);
+    // console.log(value,"\n");
+
+    const entry = (type in KEY) ? `${x},${y}: ${KEY[type]}` : key.toString();
+
     try {
-      // result[key] = 
-      await NBT.read(value,{
+      result[entry] = await NBT.read(value,{
         endian: "little",
         compression: null,
         isNamed: true,
         isBedrockLevel: false
       }).then(({ data }) => data);
     } catch {
-      // result[key] = value;
-      // console.log(key.join(" "));
-
-      const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
-      const x = view.getInt32(0,true);
-      const y = view.getInt32(3,true);
-      const type = view.getUint8(8) as KEY;
-      const index = (type === 47) ? view.getUint8(9) : "";
-      console.log(x,y,KEY[type],index);
+      result[entry] = value;
     }
   }
 
