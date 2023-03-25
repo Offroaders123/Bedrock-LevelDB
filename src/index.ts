@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import type { LevelDB } from "leveldb-zlib";
+import type { LevelUp } from "levelup";
 import * as NBT from "nbtify";
 
 export enum KEY {
@@ -29,30 +29,11 @@ export enum KEY {
   LegacyVersion = 118
 }
 
-export async function read(db: LevelDB) {
+export async function read(db: LevelUp<Uint8Array,Uint8Array>) {
   const result: Record<string,any> = {};
 
-  for await (const [key,value] of db){
-    const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
-    const x = view.getInt32(0,true);
-    const y = view.getInt32(3,true);
-    const type = view.getUint8(8) as KEY;
-    // const index = (type === 47) ? view.getUint8(9) : "";
-    // console.log(x,y,KEY[type],index);
-    // console.log(value,"\n");
-
-    const entry = (type in KEY) ? `${x},${y}: ${KEY[type]}` : key.toString();
-
-    try {
-      result[entry] = await NBT.read(value,{
-        endian: "little",
-        compression: null,
-        isNamed: true,
-        isBedrockLevel: false
-      }).then(({ data }) => data);
-    } catch {
-      result[entry] = value;
-    }
+  for await (const entry of db.iterator()){
+    console.log(entry);continue;
   }
 
   return result;

@@ -1,13 +1,17 @@
 // @ts-check
 
-import { LevelDB } from "leveldb-zlib";
+import levelup from "levelup";
+import leveldown from "leveldown";
+import encode from "encoding-down";
+
+import { deflateSync, inflateSync } from "node:zlib";
 import { read } from "../dist/index.js";
 
-const db = new LevelDB(decodeURI(new URL("../test/My World/db/",import.meta.url).pathname));
+const demoPath = decodeURI(new URL("../test/My World/db/",import.meta.url).pathname);
 
-await db.open();
+const db = levelup(encode(leveldown(demoPath)),{
+  encode: deflateSync,
+  decode: inflateSync
+});
 
-const data = await read(db);
-console.log(data);
-
-await db.close();
+await read(db);
