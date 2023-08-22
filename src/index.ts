@@ -1,6 +1,7 @@
-import * as fs from "node:fs/promises";
+import { read as readNBT } from "nbtify";
+
 import type { LevelDB } from "leveldb-zlib";
-import * as NBT from "nbtify";
+import type { RootTag } from "nbtify";
 
 export enum KEY {
   Data3D = 43,
@@ -29,8 +30,8 @@ export enum KEY {
   LegacyVersion = 118
 }
 
-export async function read(db: LevelDB) {
-  const result: Record<string,any> = {};
+export async function readLevel(db: LevelDB) {
+  const result: Record<string,RootTag | Buffer> = {};
 
   for await (const [key,value] of db){
     const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
@@ -44,14 +45,15 @@ export async function read(db: LevelDB) {
     const entry = (type in KEY) ? `${x},${y}: ${KEY[type]}` : key.toString();
 
     try {
-      result[entry] = await NBT.read(value,{
+      const { data } = await readNBT(value,{
         endian: "little",
         compression: null,
-        isNamed: true,
-        isBedrockLevel: false
-      }).then(({ data }) => data);
+        name: true,
+        bedrockLevel: false
+      });
+      result[entry] = data;
     } catch {
-      result[entry] = value;
+      result[entry] = value as unknown as Buffer;
     }
   }
 

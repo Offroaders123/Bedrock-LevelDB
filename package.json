@@ -1,19 +1,20 @@
 {
   "name": "bedrock-leveldb",
-  "version": "0.1.1",
   "private": true,
+  "version": "0.1.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "npx tsc",
-    "dev": "npx tsc -w"
+    "build": "tsc --project ./tsconfig.build.json",
+    "dev": "tsc --watch"
   },
   "dependencies": {
     "leveldb-zlib": "^1.2.0",
-    "nbtify": "^1.20.1"
+    "nbtify": "^1.68.0"
   },
   "devDependencies": {
-    "@types/node": "^18.15.9"
+    "@types/node": "^18.17.6",
+    "typescript": "^5.1.6"
   }
 }
