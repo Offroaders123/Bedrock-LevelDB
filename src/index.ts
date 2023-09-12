@@ -43,6 +43,8 @@ export async function readLevel(db: LevelDB) {
     // console.log(value,"\n");
 
     const entry = (type in KEY) ? `${x},${y}: ${KEY[type]}` : key.toString();
+    console.log((key as Buffer).toString("hex").padEnd(20," "),entry);
+    continue;
 
     try {
       const { data } = await readNBT(value,{
