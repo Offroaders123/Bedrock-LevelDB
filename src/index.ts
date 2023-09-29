@@ -46,6 +46,7 @@ export async function readLevel(db: LevelDB) {
     console.log((key as Buffer).toString("hex").padEnd(20," "),entry);
     continue;
 
+    // @ts-ignore - this is for when the `continue` statement above is active
     try {
       const { data } = await readNBT(value,{
         endian: "little",
