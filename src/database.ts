@@ -44,6 +44,7 @@ export function readKey(key: Buffer): Key {
   const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
   const x = view.getInt32(0,true);
   const y = view.getInt32(3,true);
-  const type = KEY[view.getUint8(8) as KEY] as keyof typeof KEY;
+  let type = KEY[view.getUint8(8) as KEY] as keyof typeof KEY;
+  if (!(type in KEY)) type = key.toString("utf-8") as keyof typeof KEY;
   return { x, y, type };
 }
