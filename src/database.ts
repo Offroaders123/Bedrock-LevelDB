@@ -1,4 +1,5 @@
 import { LevelDB } from "leveldb-zlib";
+import { read } from "nbtify";
 import { KEY } from "./key.js";
 
 declare module "leveldb-zlib" {
@@ -14,20 +15,42 @@ export type Chunk = {
   y: number;
 };
 
-export type Entries = Chunk[];
+export interface Entries {
+  chunks: Chunk[];
+}
 
 export async function readDatabase(path: string): Promise<Entries> {
   const db = new LevelDB(path);
   await db.open();
 
-  const entries: Entries = [];
+  const entries: Entries = {
+    chunks: []
+  };
 
   for await (const [key,value] of db){
     const { x, y, type } = readKey(key);
-    if (!entries.some(entry => entry.x === x && entry.y === y)){
-      entries.push({ x, y } as Chunk);
+
+    if (!(type in KEY)){
+      try {
+        const data = await read(value,{
+          endian: "little",
+          compression: null,
+          name: true,
+          bedrockLevel: false
+        });
+        // @ts-expect-error - untyped indexing
+        entries[type] = data;
+      } catch {
+        // @ts-expect-error - untyped indexing
+        entries[type] = value;
+      }  
+      continue;
     }
-    entries.find(entry => entry.x === x && entry.y === y)![type] = value;
+
+    if (!entries.chunks.some(entry => entry.x === x && entry.y === y)){
+      entries.chunks.push({ x, y } as Chunk);
+    }
+    entries.chunks.find(entry => entry.x === x && entry.y === y)![type] = value;
   }
 
   await db.close();
