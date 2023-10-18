@@ -1,12 +1,7 @@
-import { LevelDB } from "leveldb-zlib";
-import { readLevel } from "../src/index.js";
+import { fileURLToPath } from "node:url";
+import { readDatabase } from "../src/index.js";
 
-const world = new URL("../test/My World/db/",import.meta.url);
-const db = new LevelDB(decodeURI(world.pathname));
+const WORLD = fileURLToPath(new URL("../test/My World/db",import.meta.url));
 
-await db.open();
-
-const data = await readLevel(db);
+const data = await readDatabase(WORLD);
 console.log(data);
-
-await db.close();
