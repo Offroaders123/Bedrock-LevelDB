@@ -43,8 +43,16 @@ export async function readLevel(db: LevelDB) {
     // console.log(value,"\n");
 
     const entry = (type in KEY) ? `${x},${y}: ${KEY[type]}` : key.toString();
-    console.log((key as Buffer).toString("hex").padEnd(20," "),entry);
-    continue;
+    // console.log((key as Buffer).toString("hex").padEnd(20," "),entry);
+    // continue;
+
+    const coords = entry.slice(0,entry.indexOf(":"));
+    const name = entry.slice(entry.indexOf(": ") + 2);
+    // console.log(coords,name);
+    if (result[coords] === undefined){
+      result[coords] = {};
+    }
+    const chunk = result[coords] as any;
 
     // @ts-ignore - this is for when the `continue` statement above is active
     try {
@@ -54,9 +62,9 @@ export async function readLevel(db: LevelDB) {
         name: true,
         bedrockLevel: false
       });
-      result[entry] = data;
+      chunk[name] = data;
     } catch {
-      result[entry] = value as unknown as Buffer;
+      chunk[name] = value as unknown as Buffer;
     }
   }
 
