@@ -29,6 +29,8 @@ export async function readDatabase(path: string): Promise<Entries> {
 
   for await (const [key,value] of db){
     const { x, y, type } = readKey(key);
+    console.log(`(${x},${y})`,type);
+    console.log(...key,"\n");
 
     if (!(type in KEY)){
       try {
@@ -66,7 +68,7 @@ export interface Key {
 export function readKey(key: Buffer): Key {
   const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
   const x = view.getInt32(0,true);
-  const y = view.getInt32(3,true);
+  const y = view.getInt32(4,true);
   let type = KEY[view.getUint8(8) as KEY] as keyof typeof KEY;
   if (!(type in KEY)) type = key.toString("utf-8") as keyof typeof KEY;
   return { x, y, type };
