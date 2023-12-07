@@ -29,8 +29,6 @@ export async function readDatabase(path: string): Promise<Entries> {
 
   for await (const [key,value] of db){
     const { x, y, type } = readKey(key);
-    console.log(`(${x},${y})`,type);
-    console.log(...key,"\n");
 
     if (!(type in KEY)){
       try {
