@@ -9,7 +9,7 @@ declare module "leveldb-zlib" {
 }
 
 export type Chunk = {
-  -readonly [K in keyof typeof KEY]: Buffer;
+  -readonly [K in keyof typeof KEY]?: Buffer;
 } & {
   x: number;
   y: number;
