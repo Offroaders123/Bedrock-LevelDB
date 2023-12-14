@@ -22,10 +22,14 @@ const blockEntityActors: Buffer[] = data.chunks
 const blockEntities: RootTag[][] = await Promise.all(
   blockEntityActors
     // .map(blockEntity => blockEntity.join(" "))
-    .map(async (blockEntity): Promise<RootTag[]> => {
+    .map(blockEntity => parseBlockEntityActor(blockEntity))
+);
+console.log(blockEntities);
+
+export async function parseBlockEntityActor(blockEntity: Uint8Array): Promise<RootTag[]> {
       const blockEntities: RootTag[] = [];
       let byteOffsets: number[] = [];
-      let trailingBytes: Buffer;
+      let trailingBytes: Uint8Array;
 
       for (let i = 0; i < blockEntity.byteLength; i++){
         try {
@@ -41,6 +45,4 @@ const blockEntities: RootTag[][] = await Promise.all(
         // .join(" ")
       );
       return blockEntities;
-    })
-);
-console.log(blockEntities);
+}
