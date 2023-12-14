@@ -2,7 +2,15 @@ import { fileURLToPath } from "node:url";
 import { read } from "nbtify";
 import { readDatabase } from "../src/index.js";
 
-import type { RootTag } from "nbtify";
+import type { RootTag, ReadOptions } from "nbtify";
+
+const FORMAT: Required<ReadOptions> = {
+  name: "",
+  endian: "little",
+  compression: null,
+  bedrockLevel: null,
+  strict: true
+};
 
 const WORLD = fileURLToPath(new URL("../test/My World/db",import.meta.url));
 
@@ -21,7 +29,7 @@ const blockEntities: RootTag[][] = await Promise.all(
 
       for (let i = 0; i < blockEntity.byteLength; i++){
         try {
-          const { data } = await read(blockEntity.subarray(i),{ name: "", endian: "little", compression: null, bedrockLevel: null, strict: false });
+          const { data } = await read(blockEntity.subarray(i),{ ...FORMAT, strict: false } satisfies Required<ReadOptions>);
           blockEntities.push(data);
           byteOffsets.push(i);
         } catch {}
