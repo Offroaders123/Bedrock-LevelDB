@@ -1,0 +1,76 @@
+[
+  {
+    Findable: 0b,
+    Items: [],
+    id: 'Chest',
+    isMovable: 1b,
+    pairlead: 0b,
+    pairx: -16,
+    pairz: -8,
+    x: -17,
+    y: -60,
+    z: -8
+  },
+  {
+    BurnDuration: 0s,
+    BurnTime: 0s,
+    CookTime: 0s,
+    Items: [],
+    StoredXPInt: 0,
+    id: 'BlastFurnace',
+    isMovable: 1b,
+    x: -17,
+    y: -60,
+    z: -11
+  },
+  {
+    BurnDuration: 0s,
+    BurnTime: 0s,
+    CookTime: 0s,
+    Items: [],
+    StoredXPInt: 0,
+    id: 'Smoker',
+    isMovable: 1b,
+    x: -19,
+    y: -60,
+    z: -11
+  },
+  {
+    CookTime: 0s,
+    FuelAmount: 0s,
+    FuelTotal: 0s,
+    Items: [],
+    id: 'BrewingStand',
+    isMovable: 1b,
+    x: -21,
+    y: -60,
+    z: -11
+  },
+  {
+    id: 'EnchantTable',
+    isMovable: 1b,
+    rott: 0.0015927553176879883f,
+    x: -27,
+    y: -60,
+    z: -11
+  },
+  {
+    Findable: 0b,
+    Items: [],
+    id: 'Barrel',
+    isMovable: 1b,
+    x: -29,
+    y: -60,
+    z: -11
+  },
+  {
+    Findable: 0b,
+    Items: [],
+    facing: 1b,
+    id: 'ShulkerBox',
+    isMovable: 1b,
+    x: -31,
+    y: -60,
+    z: -11
+  }
+]
