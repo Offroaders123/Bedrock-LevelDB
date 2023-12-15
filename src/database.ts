@@ -2,14 +2,24 @@ import { LevelDB } from "leveldb-zlib";
 import { read } from "nbtify";
 import { KEY } from "./key.js";
 
+import type { NBTData, ReadOptions } from "nbtify";
+
 declare module "leveldb-zlib" {
   export class LevelDB {
     [Symbol.asyncIterator](): AsyncGenerator<[Buffer,Buffer],void,void>;
   }
 }
 
+export const FORMAT: Required<ReadOptions> = {
+  name: true,
+  endian: "little",
+  compression: null,
+  bedrockLevel: false,
+  strict: true
+};
+
 export type Chunk = {
-  -readonly [K in keyof typeof KEY]?: Buffer;
+  -readonly [K in keyof typeof KEY]?: Buffer | NBTData[];
 } & {
   x: number;
   y: number;
@@ -32,12 +42,7 @@ export async function readDatabase(path: string): Promise<Entries> {
 
     if (!(type in KEY)){
       try {
-        const data = await read(value,{
-          endian: "little",
-          compression: null,
-          name: true,
-          bedrockLevel: false
-        });
+        const data = await read(value,FORMAT);
         // @ts-expect-error - untyped indexing
         entries[type] = data;
       } catch {
@@ -50,7 +55,8 @@ export async function readDatabase(path: string): Promise<Entries> {
     if (!entries.chunks.some(entry => entry.x === x && entry.y === y)){
       entries.chunks.push({ x, y } as Chunk);
     }
-    entries.chunks.find(entry => entry.x === x && entry.y === y)![type] = value;
+    let entry: Buffer | NBTData[] = await parseActorNBTList(value).catch(() => value);
+    entries.chunks.find(entry => entry.x === x && entry.y === y)![type] = entry;
   }
 
   await db.close();
@@ -70,4 +76,24 @@ export function readKey(key: Buffer): Key {
   let type = KEY[view.getUint8(8) as KEY] as keyof typeof KEY;
   if (!(type in KEY)) type = key.toString("utf-8") as keyof typeof KEY;
   return { x, y, type };
+}
+
+export async function parseActorNBTList(data: Uint8Array): Promise<NBTData[]> {
+  const blockEntities: NBTData[] = [];
+
+  while (true){
+    try {
+      const blockEntity: NBTData = await read(data,FORMAT);
+      blockEntities.push(blockEntity);
+      break;
+    } catch (error){
+      const message: string = (error as Error).message ?? `${error}`;
+      const length: number = parseInt(message.slice(46));
+      const blockEntity: NBTData = await read(data,{ ...FORMAT, strict: false });
+      blockEntities.push(blockEntity);
+      data = data.subarray(length);
+    }
+  }
+
+  return blockEntities;
 }
