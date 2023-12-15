@@ -6,7 +6,11 @@ import type { NBTData, ReadOptions } from "nbtify";
 
 declare module "leveldb-zlib" {
   export class LevelDB {
-    [Symbol.asyncIterator](): AsyncGenerator<[Buffer,Buffer],void,void>;
+    [Symbol.asyncIterator](): ReturnType<Iterator[typeof Symbol.asyncIterator]>;
+  }
+
+  export class Iterator {
+    [Symbol.asyncIterator](): AsyncGenerator<[Buffer, Buffer], void, void>;
   }
 }
 
@@ -37,7 +41,7 @@ export async function readDatabase(path: string): Promise<Entries> {
     chunks: []
   };
 
-  for await (const [key,value] of db){
+  for await (const [key,value] of db.getIterator()){
     const { x, y, type } = readKey(key);
 
     if (!(type in KEY)){
