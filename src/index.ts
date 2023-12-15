@@ -1,2 +1,2 @@
 export * from "./database.js";
-export * from "./key.js";
+export * from "./entry.js";
