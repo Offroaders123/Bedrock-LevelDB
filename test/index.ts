@@ -1,7 +1,7 @@
-import { writeFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
+// import { fileURLToPath } from "node:url";
 import { read, stringify } from "nbtify";
-import { readDatabase } from "../src/index.js";
+// import { readDatabase } from "../src/index.js";
 
 import type { RootTag, ReadOptions } from "nbtify";
 
@@ -13,16 +13,18 @@ const FORMAT: Required<ReadOptions> = {
   strict: true
 };
 
-const WORLD = fileURLToPath(new URL("../test/My World/db",import.meta.url));
+// const WORLD = fileURLToPath(new URL("../test/My World/db",import.meta.url));
 
-const data = await readDatabase(WORLD);
-const blockEntityActors: Buffer[] = data.chunks
-  .map(chunk => chunk.BlockEntity)
-  .filter((blockEntity): blockEntity is Buffer => blockEntity !== undefined);
+// const data = await readDatabase(WORLD);
+// const blockEntityActors: Buffer[] = data.chunks
+//   .map(chunk => chunk.BlockEntity)
+//   .filter((blockEntity): blockEntity is Buffer => blockEntity !== undefined);
 
-const demo: Buffer = blockEntityActors[2]!;
+const DEMO = new URL("./BlockEntity.bin",import.meta.url);
 
-await writeFile(new URL("./BlockEntity.bin",import.meta.url),demo);
+const demo: Buffer =
+  // blockEntityActors[2]!;
+  await readFile(DEMO);
 
 const ids: string[] = demo.toString("utf-8").split("id").map(id => id.split("\x01")?.[0]?.split("\x00")[1]?.replace(/\W/g,"") ?? "").filter(string => /^[A-Z]/g.test(string));
 console.log(ids);
