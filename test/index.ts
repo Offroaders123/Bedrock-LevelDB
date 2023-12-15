@@ -1,5 +1,6 @@
+import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { read } from "nbtify";
+import { read, stringify } from "nbtify";
 import { readDatabase } from "../src/index.js";
 
 import type { RootTag, ReadOptions } from "nbtify";
@@ -19,12 +20,19 @@ const blockEntityActors: Buffer[] = data.chunks
   .map(chunk => chunk.BlockEntity)
   .filter((blockEntity): blockEntity is Buffer => blockEntity !== undefined);
 
-const blockEntities: RootTag[][] = await Promise.all(
-  blockEntityActors
-    // .map(blockEntity => blockEntity.join(" "))
-    .map(blockEntity => parseBlockEntityActor(blockEntity))
+const demo: Buffer = blockEntityActors[2]!;
+
+await writeFile(new URL("./BlockEntity.bin",import.meta.url),demo);
+
+const ids: string[] = demo.toString("utf-8").split("id").map(id => id.split("\x01")?.[0]?.split("\x00")[1]?.replace(/\W/g,"") ?? "").filter(string => /^[A-Z]/g.test(string));
+console.log(ids);
+
+const blockEntities: RootTag[] = await parseBlockEntityActor(demo);
+console.log(blockEntities
+  .filter(blockEntity => "id" in blockEntity)
+  // .map(blockEntity => stringify(blockEntity,{ space: 2 }))
+  // .join(",\n\n")
 );
-console.log(blockEntities);
 
 export async function parseBlockEntityActor(blockEntity: Uint8Array): Promise<RootTag[]> {
   const blockEntities: RootTag[] = [];
