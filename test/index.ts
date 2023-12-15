@@ -36,23 +36,26 @@ console.log(blockEntities
   // .join(",\n\n")
 );
 
-export async function parseBlockEntityActor(blockEntity: Uint8Array): Promise<RootTag[]> {
+export async function parseBlockEntityActor(data: Uint8Array): Promise<RootTag[]> {
   const blockEntities: RootTag[] = [];
-  let byteOffsets: number[] = [];
-  let trailingBytes: Uint8Array;
 
-  for (let i = 0; i < blockEntity.byteLength; i++){
+  // for (let i = 0; i < 9; i++){
+  while (true){
     try {
-      const { data } = await read(blockEntity.subarray(i),{ ...FORMAT, strict: false } satisfies Required<ReadOptions>);
-      blockEntities.push(data);
-      byteOffsets.push(i);
-    } catch {}
+      const blockEntity: RootTag = await read(data,FORMAT).then(data => data.data);
+      blockEntities.push(blockEntity);
+      console.log("end!");
+      break;
+    } catch (error){
+      const message: string = (error as Error).message ?? `${error}`;
+      console.log(message);
+      const length: number = parseInt(message.slice(46));
+      console.log(length);
+      const blockEntity: RootTag = await read(data,{ ...FORMAT, strict: false }).then(data => data.data);
+      blockEntities.push(blockEntity);
+      data = data.subarray(length);
+    }
   }
-  trailingBytes = blockEntity.subarray(byteOffsets.at(-1) ?? 0);
 
-  console.log(byteOffsets);
-  console.log(trailingBytes
-    // .join(" ")
-  );
   return blockEntities;
 }
