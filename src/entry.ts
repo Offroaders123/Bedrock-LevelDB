@@ -1,6 +1,6 @@
 import { read } from "nbtify";
 
-import type { NBTData, ReadOptions, ByteTag, BooleanTag, IntTag, LongTag, FloatTag, StringTag } from "nbtify";
+import type { NBTData, ReadOptions, ByteTag, BooleanTag, IntTag, LongTag, FloatTag, StringTag, RootTagLike } from "nbtify";
 
 export async function readEntry(entry: [Buffer, Buffer]){
   const key = readKey(entry[0]);
@@ -61,30 +61,30 @@ export async function readValue(key: Key, value: Buffer){
   } else {
     switch (key.type){
       // ChunkKey
-      case "Data3D": return value;
-      case "Version": return value.readInt8();
-      case "Data2D": return value;
-      case "Data2DLegacy": return value;
-      case "SubChunkPrefix": return value.readInt8();
-      case "LegacyTerrain": return value;
-      case "BlockEntity": return readNBTList(value);
-      case "Entity": return readNBTList(value);
-      case "PendingTicks": return readNBTList(value);
-      case "LegacyBlockExtraData": return { entries: value.readInt32LE(), entriesKey: value.readInt32LE(4), value: value.readInt16LE(8) };
-      case "BiomeState": return value;
-      case "FinalizedState": return value.readInt32LE();
-      case "ConversionData": return value;
-      case "BorderBlocks": return value;
-      case "HardcodedSpawners": return value;
-      case "RandomTicks": return readNBTList(value);
-      case "CheckSums": return value;
-      case "GenerationSeed": return value;
-      case "GeneratedPreCavesAndCliffsBlending": return Boolean(value.readInt8());
-      case "BlendingBiomeHeight": return value;
-      case "MetaDataHash": return value;
-      case "BlendingData": return value;
-      case "ActorDigestVersion": return value.readInt8();
-      case "LegacyVersion": return value.readInt8();
+      case "Data3D": return value as Data3D;
+      case "Version": return value.readInt8() as Version;
+      case "Data2D": return value as Data2D;
+      case "Data2DLegacy": return value as Data2DLegacy;
+      case "SubChunkPrefix": return value.readInt8() as SubChunkPrefix;
+      case "LegacyTerrain": return value as LegacyTerrain;
+      case "BlockEntity": return readNBTList<BlockEntity>(value) as Promise<BlockEntities>;
+      case "Entity": return readNBTList<Entity>(value) as Promise<Entities>;
+      case "PendingTicks": return readNBTList<PendingTick>(value) as Promise<PendingTicks>;
+      case "LegacyBlockExtraData": return { entries: value.readInt32LE(), entriesKey: value.readInt32LE(4), value: value.readInt16LE(8) } as LegacyBlockExtraData;
+      case "BiomeState": return value as BiomeState;
+      case "FinalizedState": return value.readInt32LE() as FinalizedState;
+      case "ConversionData": return value as ConversionData;
+      case "BorderBlocks": return value as BorderBlocks;
+      case "HardcodedSpawners": return value as HardcodedSpawners;
+      case "RandomTicks": return readNBTList<RandomTick>(value) as Promise<RandomTicks>;
+      case "CheckSums": return value as CheckSums;
+      case "GenerationSeed": return value as GenerationSeed;
+      case "GeneratedPreCavesAndCliffsBlending": return Boolean(value.readInt8()) as GeneratedPreCavesAndCliffsBlending;
+      case "BlendingBiomeHeight": return value as BlendingBiomeHeight;
+      case "MetaDataHash": return value as MetaDataHash;
+      case "BlendingData": return value as BlendingData;
+      case "ActorDigestVersion": return value.readInt8() as ActorDigestVersion;
+      case "LegacyVersion": return value.readInt8() as LegacyVersion;
 
       // SuffixKey
       case "actorprefix": return read(value,format);
@@ -99,19 +99,19 @@ export async function readValue(key: Key, value: Buffer){
   }
 }
 
-export async function readNBTList(data: Uint8Array): Promise<NBTData[]> {
-  const blockEntities: NBTData[] = [];
+export async function readNBTList<T extends RootTagLike>(data: Uint8Array): Promise<NBTData<T>[]> {
+  const blockEntities: NBTData<T>[] = [];
 
   while (true){
     if (data.byteLength === 0) break;
     try {
-      const blockEntity: NBTData = await read(data,format);
+      const blockEntity: NBTData<T> = await read<T>(data,format);
       blockEntities.push(blockEntity);
       break;
     } catch (error){
       const message: string = (error as Error).message ?? `${error}`;
       const length: number = parseInt(message.slice(46));
-      const blockEntity: NBTData = await read(data,{ ...format, strict: false });
+      const blockEntity: NBTData<T> = await read<T>(data,{ ...format, strict: false });
       blockEntities.push(blockEntity);
       data = data.subarray(length);
     }
@@ -201,6 +201,8 @@ export enum CHUNK_KEY {
   LegacyVersion = 118
 }
 
+// WorldKey
+
 export interface AutonomousEntities {
   AutonomousEntityList: unknown[];
 }
@@ -263,6 +265,62 @@ export interface ScoreboardObjectiveScore {
   Score: IntTag;
   ScoreboardId: LongTag;
 }
+
+// ChunkKey
+
+export type Data3D = Buffer;
+export type Version = number;
+export type Data2D = Buffer;
+export type Data2DLegacy = Buffer;
+export type SubChunkPrefix = number;
+export type LegacyTerrain = Buffer;
+
+export type BlockEntities = NBTData<BlockEntity>[];
+
+export interface BlockEntity {
+  [name: string]: never; // declared from Region-Types
+}
+
+export type Entities = NBTData<Entity>[];
+
+export interface Entity {
+  [name: string]: never; // declared from Region-Types
+}
+
+export type PendingTicks = NBTData<PendingTick>[];
+
+export interface PendingTick {
+  [name: string]: never;
+}
+
+export interface LegacyBlockExtraData {
+  entries: number;
+  entriesKey: number;
+  value: number;
+}
+
+export type BiomeState = Buffer; // NBT?
+export type FinalizedState = number;
+export type ConversionData = Buffer; // NBT?
+export type BorderBlocks = Buffer; // NBT?
+export type HardcodedSpawners = Buffer; // NBT?
+
+export type RandomTicks = NBTData<RandomTick>[];
+
+export interface RandomTick {
+  [name: string]: never;
+}
+
+export type CheckSums = Buffer;
+export type GenerationSeed = Buffer;
+export type GeneratedPreCavesAndCliffsBlending = boolean;
+export type BlendingBiomeHeight = Buffer;
+export type MetaDataHash = Buffer;
+export type BlendingData = Buffer;
+export type ActorDigestVersion = number;
+export type LegacyVersion = number;
+
+// SuffixKey
 
 export interface VillageDwellers {
   Dwellers: VillageDweller[];
