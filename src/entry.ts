@@ -5,7 +5,7 @@ import type { NBTData, ReadOptions, ByteTag, BooleanTag, IntTag, LongTag, FloatT
 export async function readEntry(entry: [Buffer, Buffer]){
   const key = readKey(entry[0]);
   const value = await readValue(key,entry[1]);
-  return [key,value];
+  return [key,value] as const;
 }
 
 export function readKey(key: Buffer): Key {
