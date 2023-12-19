@@ -1,6 +1,8 @@
 import { LevelDB } from "leveldb-zlib";
 import { readEntry } from "./entry.js";
 
+import type { WorldKey, SuffixKey, ChunkKey, Value } from "./entry.js";
+
 declare module "leveldb-zlib" {
   export class LevelDB {
     [Symbol.asyncIterator](): ReturnType<Iterator[typeof Symbol.asyncIterator]>;
@@ -11,15 +13,17 @@ declare module "leveldb-zlib" {
   }
 }
 
-export interface Entries {
+export type Entries = {
   chunks: Chunk[];
-  [entry: string]: any;
+} & {
+  [K in WorldKey | `${SuffixKey["type"]}${string}`]?: Value;
 }
 
-export interface Chunk {
+export type Chunk = {
   x: number;
   y: number;
-  [entry: string]: any;
+} & {
+  [K in ChunkKey["type"]]?: Value;
 }
 
 export async function readDatabase(path: string): Promise<Entries> {
@@ -42,7 +46,7 @@ export async function readDatabase(path: string): Promise<Entries> {
     }
 
     if (!("x" in key) || !("y" in key)){
-      entries[key.key.toString()] = value;
+      entries[key.key.toString() as `${SuffixKey["type"]}${string}`] = value;
       continue;
     }
 

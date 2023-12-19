@@ -2,10 +2,12 @@ import { read } from "nbtify";
 
 import type { NBTData, ReadOptions, ByteTag, BooleanTag, IntTag, LongTag, FloatTag, StringTag, RootTagLike } from "nbtify";
 
-export async function readEntry(entry: [Buffer, Buffer]){
-  const key = readKey(entry[0]);
-  const value = await readValue(key,entry[1]);
-  return [key,value] as const;
+export type Entry = [Key, Value];
+
+export async function readEntry(entry: [Buffer, Buffer]): Promise<Entry> {
+  const key: Key = readKey(entry[0]);
+  const value: Value = await readValue(key,entry[1]);
+  return [key,value];
 }
 
 export function readKey(key: Buffer): Key {
@@ -44,16 +46,16 @@ export function readKey(key: Buffer): Key {
   return { type: CHUNK_KEY[type]! as ChunkKey["type"], x, y } satisfies ChunkKey;
 }
 
-export async function readValue(key: Key, value: Buffer){
+export async function readValue(key: Key, value: Buffer): Promise<Value> {
   if (typeof key === "string"){
     switch (key as WorldKey){
       case "AutonomousEntities": return read<AutonomousEntities>(value,format);
       case "BiomeData": return read<BiomeData>(value,format);
-      case "game_flatworldlayers": return value;
-      case "LevelChunkMetaDataDictionary": return value;
-      case "~local_player": return read(value,format);
+      case "game_flatworldlayers": return value as GameFlatWorldLayers;
+      case "LevelChunkMetaDataDictionary": return value as LevelChunkMetaDataDictionary;
+      case "~local_player": return read<LocalPlayer>(value,format);
       case "mobevents": return read<MobEvents>(value,format);
-      case "Overworld": return read(value,format);
+      case "Overworld": return read<Overworld>(value,format);
       case "schedulerWT": return read<SchedulerWT>(value,format);
       case "scoreboard": return read<Scoreboard>(value,format);
       // default: return value;
@@ -87,8 +89,8 @@ export async function readValue(key: Key, value: Buffer){
       case "LegacyVersion": return value.readInt8() as LegacyVersion;
 
       // SuffixKey
-      case "actorprefix": return read(value,format);
-      case "digp": return value;
+      case "actorprefix": return read<ActorPrefix>(value,format);
+      case "digp": return value as DigP;
       case "VILLAGE_DWELLERS": return read<VillageDwellers>(value,format);
       case "VILLAGE_INFO": return read<VillageInfo>(value,format);
       case "VILLAGE_PLAYERS": return read<VillagePlayers>(value,format);
@@ -201,6 +203,8 @@ export enum CHUNK_KEY {
   LegacyVersion = 118
 }
 
+export type Value = NBTData<AutonomousEntities> | NBTData<BiomeData> | GameFlatWorldLayers | LevelChunkMetaDataDictionary | NBTData<LocalPlayer> | NBTData<MobEvents> | NBTData<Overworld> | NBTData<SchedulerWT> | NBTData<Scoreboard> | Data3D | Version | Data2D | Data2DLegacy | SubChunkPrefix | LegacyTerrain | BlockEntities | Entities | PendingTicks | LegacyBlockExtraData | BiomeState | FinalizedState | ConversionData | BorderBlocks | HardcodedSpawners | RandomTicks | CheckSums | GenerationSeed | GeneratedPreCavesAndCliffsBlending | BlendingBiomeHeight | MetaDataHash | BlendingData | ActorDigestVersion | LegacyVersion | ActorPrefix | DigP | NBTData<VillageDwellers> | NBTData<VillageInfo> | NBTData<VillagePlayers> | NBTData<VillagePois> | NBTData<Map>;
+
 // WorldKey
 
 export interface AutonomousEntities {
@@ -216,11 +220,23 @@ export interface BiomeDataList {
   snowAccumulation: FloatTag;
 }
 
+export type GameFlatWorldLayers = Buffer;
+
+export type LevelChunkMetaDataDictionary = Buffer;
+
+export interface LocalPlayer {
+  [name: string]: never; // from Region-Types
+}
+
 export interface MobEvents {
   events_enabled: BooleanTag;
   "minecraft:ender_dragon_event": BooleanTag;
   "minecraft:pillager_patrols_event": BooleanTag;
   "minecraft:wandering_trader_event": BooleanTag;
+}
+
+export interface Overworld {
+  [name: string]: never; // untyped atm
 }
 
 export interface SchedulerWT {
@@ -290,7 +306,7 @@ export interface Entity {
 export type PendingTicks = NBTData<PendingTick>[];
 
 export interface PendingTick {
-  [name: string]: never;
+  [name: string]: never; // untyped atm
 }
 
 export interface LegacyBlockExtraData {
@@ -308,7 +324,7 @@ export type HardcodedSpawners = Buffer; // NBT?
 export type RandomTicks = NBTData<RandomTick>[];
 
 export interface RandomTick {
-  [name: string]: never;
+  [name: string]: never; // untyped atm
 }
 
 export type CheckSums = Buffer;
@@ -321,6 +337,12 @@ export type ActorDigestVersion = number;
 export type LegacyVersion = number;
 
 // SuffixKey
+
+export interface ActorPrefix {
+  [name: string]: never; // untyped atm
+}
+
+export type DigP = Buffer;
 
 export interface VillageDwellers {
   Dwellers: VillageDweller[];
@@ -390,5 +412,5 @@ export interface VillagePoiInstance {
 }
 
 export interface Map {
-  [name: string]: never;
+  [name: string]: never; // untyped atm
 }
