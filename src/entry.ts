@@ -1,6 +1,6 @@
 import { read } from "nbtify";
 
-import type { NBTData, ReadOptions } from "nbtify";
+import type { NBTData, ReadOptions, ByteTag, BooleanTag, IntTag, LongTag, FloatTag, StringTag } from "nbtify";
 
 export async function readEntry(entry: [Buffer, Buffer]){
   const key = readKey(entry[0]);
@@ -47,15 +47,15 @@ export function readKey(key: Buffer): Key {
 export async function readValue(key: Key, value: Buffer){
   if (typeof key === "string"){
     switch (key as WorldKey){
-      case "AutonomousEntities": return read(value,format);
-      case "BiomeData": return read(value,format);
+      case "AutonomousEntities": return read<AutonomousEntities>(value,format);
+      case "BiomeData": return read<BiomeData>(value,format);
       case "game_flatworldlayers": return value;
       case "LevelChunkMetaDataDictionary": return value;
       case "~local_player": return read(value,format);
-      case "mobevents": return read(value,format);
+      case "mobevents": return read<MobEvents>(value,format);
       case "Overworld": return read(value,format);
-      case "schedulerWT": return read(value,format);
-      case "scoreboard": return read(value,format);
+      case "schedulerWT": return read<SchedulerWT>(value,format);
+      case "scoreboard": return read<Scoreboard>(value,format);
       // default: return value;
     }
   } else {
@@ -89,11 +89,11 @@ export async function readValue(key: Key, value: Buffer){
       // SuffixKey
       case "actorprefix": return read(value,format);
       case "digp": return value;
-      case "VILLAGE_DWELLERS": return read(value,format);
-      case "VILLAGE_INFO": return read(value,format);
-      case "VILLAGE_PLAYERS": return read(value,format);
-      case "VILLAGE_POI": return read(value,format);
-      case "map": return read(value,format);
+      case "VILLAGE_DWELLERS": return read<VillageDwellers>(value,format);
+      case "VILLAGE_INFO": return read<VillageInfo>(value,format);
+      case "VILLAGE_PLAYERS": return read<VillagePlayers>(value,format);
+      case "VILLAGE_POI": return read<VillagePois>(value,format);
+      case "map": return read<Map>(value,format);
       // default: return value;
     }
   }
@@ -199,4 +199,138 @@ export enum CHUNK_KEY {
   BlendingData,
   ActorDigestVersion,
   LegacyVersion = 118
+}
+
+export interface AutonomousEntities {
+  AutonomousEntityList: unknown[];
+}
+
+export interface BiomeData {
+  list: BiomeDataList[];
+}
+
+export interface BiomeDataList {
+  id: ByteTag; // numerical biome ID, likely a resource from Region-Types
+  snowAccumulation: FloatTag;
+}
+
+export interface MobEvents {
+  events_enabled: BooleanTag;
+  "minecraft:ender_dragon_event": BooleanTag;
+  "minecraft:pillager_patrols_event": BooleanTag;
+  "minecraft:wandering_trader_event": BooleanTag;
+}
+
+export interface SchedulerWT {
+  daysSinceLastWTSpawn: IntTag;
+  isSpawningWT: BooleanTag; // most likely boolean?
+  nextWTSpawnCheckTick: LongTag;
+}
+
+export interface Scoreboard {
+  Criteria: unknown[];
+  DisplayObjectives: ScoreboardDisplayObjective[];
+  Entries: ScoreboardEntry[];
+  Objectives: ScoreboardObjective[];
+  LastUniqueId: LongTag;
+}
+
+export interface ScoreboardDisplayObjective {
+  Name: StringTag;
+  ObjectiveName: StringTag; // the internal name of the objective displayed; Resource ID of some sort?
+  SortOrder?: ByteTag<ScoreboardDisplayObjectiveSortOrder>; // seems to be optional; 'if not specified'
+}
+
+export type ScoreboardDisplayObjectiveSortOrder = 0 | 1;
+
+export interface ScoreboardEntry {
+  IdentityType: ByteTag<ScoreboardEntryType>;
+  EntityId?: LongTag;
+  PlayerId?: LongTag;
+  ScoreboardId: LongTag;
+}
+
+export type ScoreboardEntryType = 1 | 2;
+
+export interface ScoreboardObjective {
+  Criteria: "dummy";
+  DisplayName: StringTag;
+  Name: StringTag; // internal name of this objective; maybe resource ID? This might be user-defined actually, though
+  Scores: ScoreboardObjectiveScore[];
+}
+
+export interface ScoreboardObjectiveScore {
+  Score: IntTag;
+  ScoreboardId: LongTag;
+}
+
+export interface VillageDwellers {
+  Dwellers: VillageDweller[];
+}
+
+export interface VillageDweller {
+  actors: VillageDwellerActor[];
+}
+
+export interface VillageDwellerActor {
+  ID: LongTag;
+  last_saved_pos: VillageDwellerActorPos;
+  TS: LongTag;
+}
+
+export type VillageDwellerActorPos = [IntTag, IntTag, IntTag];
+
+export interface VillageInfo {
+  BDTime: LongTag;
+  GDTime: LongTag;
+  Initialized: BooleanTag; // maybe boolean?
+  MTick: LongTag;
+  PDTick: LongTag;
+  RX0: IntTag;
+  RX1: IntTag;
+  RY0: IntTag;
+  RY1: IntTag;
+  RZ0: IntTag;
+  RZ1: IntTag;
+  Tick: LongTag;
+  Version: ByteTag;
+  X0: IntTag;
+  X1: IntTag;
+  Y0: IntTag;
+  Y1: IntTag;
+  Z0: IntTag;
+  Z1: IntTag;
+}
+
+export interface VillagePlayers {
+  Players: unknown[]; // maybe `Player[]`, but I nor the wiki know for sure
+}
+
+export interface VillagePois {
+  POI: VillagePoi[];
+}
+
+export interface VillagePoi {
+  instances: VillagePoiInstance[];
+  VillagerID: LongTag;
+}
+
+export interface VillagePoiInstance {
+  Capacity: LongTag;
+  InitEvent: StringTag; // some kind of resource?
+  Name: StringTag; // resource?
+  OwnerCount: LongTag;
+  Radius: FloatTag;
+  Skip: BooleanTag; // maybe boolean?
+  SoundEvent: StringTag; // resource?
+  Type: IntTag; // some kind of union type?
+  UseAABB: BooleanTag; // boolean?
+  Weight: LongTag;
+  X: IntTag;
+  Y: IntTag;
+  Z: IntTag;
+}
+
+export interface Map {
+  [name: string]: never;
 }
