@@ -51,7 +51,7 @@ export function readKey(key: Buffer): Key {
     return stringy as WorldKey;
   }
 
-  console.log(key)//,stringy);
+  // console.log(key)//,stringy);
 
   const x = view.getInt32(0,true);
   const y = view.getInt32(4,true);
@@ -60,8 +60,8 @@ export function readKey(key: Buffer): Key {
     dimension = view.getInt32(8,true);
   } catch {}
   const type = view.getUint8(dimension === Dimension.overworld ? 8 : 12);
-  console.log(CHUNK_KEY[type]);
-  console.log(Dimension[dimension],"\n");
+  // console.log(CHUNK_KEY[type]);
+  // console.log(Dimension[dimension],"\n");
   return { x, y, dimension, type: CHUNK_KEY[type]! as ChunkKey["type"] } satisfies ChunkKey;
 }
 
@@ -118,7 +118,9 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
       case "VILLAGE_PLAYERS": return read<VillagePlayers>(value,format);
       case "VILLAGE_POI": return read<VillagePois>(value,format);
       case "map": return read<Map>(value,format);
+      case "tickingarea": return read<TickingArea>(value,format);
       // default: return value;
+      default: throw { key, value };
     }
   }
 }
@@ -230,7 +232,7 @@ export enum CHUNK_KEY {
   LegacyVersion = 118
 }
 
-export type Value = NBTData<AutonomousEntities> | NBTData<BiomeData> | GameFlatWorldLayers | LevelChunkMetaDataDictionary | NBTData<LocalPlayer> | NBTData<MobEvents> | NBTData<Overworld> | NBTData<SchedulerWT> | NBTData<Scoreboard> | Data3D | Version | Data2D | Data2DLegacy | SubChunkPrefix | LegacyTerrain | BlockEntities | Entities | PendingTicks | LegacyBlockExtraData | BiomeState | FinalizedState | ConversionData | BorderBlocks | HardcodedSpawners | RandomTicks | CheckSums | GenerationSeed | GeneratedPreCavesAndCliffsBlending | BlendingBiomeHeight | MetaDataHash | BlendingData | ActorDigestVersion | LegacyVersion | ActorPrefix | DigP | NBTData<VillageDwellers> | NBTData<VillageInfo> | NBTData<VillagePlayers> | NBTData<VillagePois> | NBTData<Map>;
+export type Value = NBTData<AutonomousEntities> | NBTData<BiomeData> | GameFlatWorldLayers | LevelChunkMetaDataDictionary | NBTData<LocalPlayer> | NBTData<MobEvents> | NBTData<Overworld> | NBTData<SchedulerWT> | NBTData<Scoreboard> | Data3D | Version | Data2D | Data2DLegacy | SubChunkPrefix | LegacyTerrain | BlockEntities | Entities | PendingTicks | LegacyBlockExtraData | BiomeState | FinalizedState | ConversionData | BorderBlocks | HardcodedSpawners | RandomTicks | CheckSums | GenerationSeed | GeneratedPreCavesAndCliffsBlending | BlendingBiomeHeight | MetaDataHash | BlendingData | ActorDigestVersion | LegacyVersion | ActorPrefix | DigP | NBTData<VillageDwellers> | NBTData<VillageInfo> | NBTData<VillagePlayers> | NBTData<VillagePois> | NBTData<Map> | NBTData<Portals> | NBTData<Nether> | NBTData<TheEnd> | NBTData<TickingArea>;
 
 // WorldKey
 
@@ -440,4 +442,55 @@ export interface VillagePoiInstance {
 
 export interface Map {
   [name: string]: never; // untyped atm
+}
+
+export interface Portals {
+  data: {
+    PortalRecords: PortalRecord[];
+  };
+}
+
+export interface PortalRecord {
+  DimId: IntTag;
+  Span: ByteTag;
+  TpX: IntTag;
+  TpY: IntTag;
+  TpZ: IntTag;
+  Xa: ByteTag;
+  Za: ByteTag;
+}
+
+export interface Nether {
+  data: {
+    LimboEntities: unknown[]; // `Entity[]`?
+  };
+}
+
+export interface TheEnd {
+  data: {
+    DragonFight: DragonFight;
+    LimboEntities: unknown[];
+  };
+}
+
+export interface DragonFight {
+  DragonFightVersion: ByteTag;
+  DragonKilled: BooleanTag;
+  DragonSpawned: BooleanTag;
+  DragonUUID: LongTag;
+  ExitPortalLocation: [IntTag, IntTag, IntTag];
+  Gateways: IntTag[]; // Maybe tuple of 20x`IntTag`? Not sure how this works exactly
+  IsRespawning: BooleanTag;
+  PreviouslyKilled: BooleanTag;
+}
+
+export interface TickingArea {
+  Dimension: IntTag<Dimension>;
+  IsCircle: BooleanTag;
+  MaxX: IntTag;
+  MaxZ: IntTag;
+  MinX: IntTag;
+  MinZ: IntTag;
+  Name: StringTag;
+  Preload: BooleanTag;
 }

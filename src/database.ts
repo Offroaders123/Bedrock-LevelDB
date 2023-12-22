@@ -50,7 +50,7 @@ export async function readDatabase(path: string): Promise<Entries> {
     }
 
     if (!("x" in key) || !("y" in key)){
-      // entries[key.key.toString() as `${SuffixKey["type"]}${string}`] = value;
+      entries[key.key.toString() as `${SuffixKey["type"]}${string}`] = value;
       continue;
     }
 
@@ -66,8 +66,6 @@ export async function readDatabase(path: string): Promise<Entries> {
   }
 
   await db.close();
-
-  // delete entries.overworld;
 
   return entries;
 }
