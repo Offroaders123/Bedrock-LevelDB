@@ -14,7 +14,9 @@ declare module "leveldb-zlib" {
 }
 
 export type Entries = {
-  chunks: Chunk[];
+  overworld: Chunk[];
+  nether: Chunk[];
+  end: Chunk[];
 } & {
   [K in WorldKey | `${SuffixKey["type"]}${string}`]?: Value;
 }
@@ -31,7 +33,9 @@ export async function readDatabase(path: string): Promise<Entries> {
   await db.open();
 
   const entries: Entries = {
-    chunks: []
+    overworld: [],
+    nether: [],
+    end: [],
   };
 
   for await (const entry of db.getIterator()){
@@ -46,23 +50,28 @@ export async function readDatabase(path: string): Promise<Entries> {
     }
 
     if (!("x" in key) || !("y" in key)){
-      entries[key.key.toString() as `${SuffixKey["type"]}${string}`] = value;
+      // entries[key.key.toString() as `${SuffixKey["type"]}${string}`] = value;
       continue;
     }
 
-    const { type, x, y } = key;
-    let chunk: Chunk | undefined = entries.chunks.find(entry => entry.x === x && entry.y === y);
+    const { x, y, type, dimension } = key;
+    let dimensionEntry: "overworld" | "nether" | "end";
+    switch (dimension){
+      case 0: dimensionEntry = "overworld"; break;
+    }
+    let chunk: Chunk | undefined = entries[dimensionEntry].find(entry => entry.x === x && entry.y === y);
 
     if (chunk === undefined){
       chunk = { x, y };
-      entries.chunks.push(chunk);
+      entries[dimensionEntry].push(chunk);
     }
 
     chunk[type] = value;
   }
 
   await db.close();
-  delete entries.chunks;
+
+  delete entries.overworld;
 
   return entries;
 }

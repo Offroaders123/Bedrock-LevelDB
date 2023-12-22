@@ -10,10 +10,16 @@ export async function readEntry(entry: [Buffer, Buffer]): Promise<Entry> {
   return [key,value];
 }
 
+export enum Dimension {
+  Overworld = 0,
+  Nether,
+  End
+}
+
 export function readKey(key: Buffer): Key {
   const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
   if (key.length < 8) return { type: "", key };
-  const type = view.getUint8(8);
+  let type = view.getUint8(8);
   if (!(type in CHUNK_KEY)){
     const stringy: string = key.toString("utf-8");
 
@@ -44,7 +50,17 @@ export function readKey(key: Buffer): Key {
   }
   const x = view.getInt32(0,true);
   const y = view.getInt32(4,true);
-  return { type: CHUNK_KEY[type]! as ChunkKey["type"], x, y } satisfies ChunkKey;
+  let dimension: Dimension = Dimension.Overworld;
+  try {
+    const attempt: number = view.getInt32(8,true);
+    // console.log(attempt);
+    if (attempt in Dimension){
+      dimension = attempt;
+      // console.log(dimension);
+    }
+  } catch {}
+  type = view.getUint8(dimension === Dimension.Overworld ? 8 : 11);
+  return { x, y, type: CHUNK_KEY[type]! as ChunkKey["type"], dimension } satisfies ChunkKey;
 }
 
 export async function readValue(key: Key, value: Buffer): Promise<Value> {
@@ -173,10 +189,10 @@ export const village_poi = /VILLAGE_[0-9a-f\\-]+_POI/;
 export const map = /map_\\-[0-9]+/;
 
 export interface ChunkKey {
-  type: keyof typeof CHUNK_KEY;
   x: number;
   y: number;
-  dimension?: number;
+  type: keyof typeof CHUNK_KEY;
+  dimension: Dimension;
 }
 
 export enum CHUNK_KEY {
