@@ -18,49 +18,51 @@ export enum Dimension {
 
 export function readKey(key: Buffer): Key {
   const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
-  if (key.length < 8) return { type: "", key };
-  let type = view.getUint8(8);
-  if (!(type in CHUNK_KEY)){
-    const stringy: string = key.toString("utf-8");
+  const stringy: string = key.toString("utf-8");
 
-    switch (true){
-      case actorprefix.test(stringy):
-        return { type: "actorprefix", key } satisfies SuffixKey;
+  switch (true){
+    case actorprefix.test(stringy):
+      return { type: "actorprefix", key } satisfies SuffixKey;
 
-      case digp.test(stringy):
-        return { type: "digp", key } satisfies SuffixKey;
+    case digp.test(stringy):
+      return { type: "digp", key } satisfies SuffixKey;
 
-      case village_dwellers.test(stringy):
-        return { type: "VILLAGE_DWELLERS", key } satisfies SuffixKey;
+    case tickingarea.test(stringy):
+      return { type: "tickingarea", key } satisfies SuffixKey;
 
-      case village_info.test(stringy):
-        return { type: "VILLAGE_INFO", key } satisfies SuffixKey;
+    case village_dwellers.test(stringy):
+      return { type: "VILLAGE_DWELLERS", key } satisfies SuffixKey;
 
-      case village_players.test(stringy):
-        return { type: "VILLAGE_PLAYERS", key } satisfies SuffixKey;
+    case village_info.test(stringy):
+      return { type: "VILLAGE_INFO", key } satisfies SuffixKey;
 
-      case village_poi.test(stringy):
-        return { type: "VILLAGE_POI", key } satisfies SuffixKey;
+    case village_players.test(stringy):
+      return { type: "VILLAGE_PLAYERS", key } satisfies SuffixKey;
 
-      case map.test(stringy):
-        return { type: "map", key } satisfies SuffixKey;
+    case village_poi.test(stringy):
+      return { type: "VILLAGE_POI", key } satisfies SuffixKey;
 
-      default: return stringy as WorldKey;
-    }
+    case map.test(stringy):
+      return { type: "map", key } satisfies SuffixKey;
   }
+  // console.log(stringy);
+
+  if (stringy in WORLD_KEY){
+    return stringy as WorldKey;
+  }
+
+  console.log(key)//,stringy);
+
   const x = view.getInt32(0,true);
   const y = view.getInt32(4,true);
   let dimension: Dimension = Dimension.overworld;
   try {
-    const attempt: number = view.getInt32(8,true);
-    // console.log(attempt);
-    if (attempt in Dimension){
-      dimension = attempt;
-      // console.log(dimension);
-    }
+    dimension = view.getInt32(8,true);
   } catch {}
-  type = view.getUint8(dimension === Dimension.overworld ? 8 : 11);
-  return { x, y, type: CHUNK_KEY[type]! as ChunkKey["type"], dimension } satisfies ChunkKey;
+  const type = view.getUint8(dimension === Dimension.overworld ? 8 : 12);
+  console.log(CHUNK_KEY[type]);
+  console.log(Dimension[dimension],"\n");
+  return { x, y, dimension, type: CHUNK_KEY[type]! as ChunkKey["type"] } satisfies ChunkKey;
 }
 
 export async function readValue(key: Key, value: Buffer): Promise<Value> {
@@ -73,6 +75,9 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
       case "~local_player": return read<LocalPlayer>(value,format);
       case "mobevents": return read<MobEvents>(value,format);
       case "Overworld": return read<Overworld>(value,format);
+      case "Nether": return read<Nether>(value,format);
+      case "TheEnd": return read<TheEnd>(value,format);
+      case "portals": return read<Portals>(value,format);
       case "schedulerWT": return read<SchedulerWT>(value,format);
       case "scoreboard": return read<Scoreboard>(value,format);
       // default: return value;
@@ -116,8 +121,6 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
       // default: return value;
     }
   }
-  if (value[0] === 10) return read(value,{ ...format, strict: false });
-  return value;
 }
 
 export async function readNBTList<T extends RootTagLike>(data: Uint8Array): Promise<NBTData<T>[]> {
@@ -160,7 +163,10 @@ export enum WORLD_KEY {
   "~local_player" = "~local_player",
   AutonomousEntities = "AutonomousEntities",
   Overworld = "Overworld",
+  Nether = "Nether",
+  TheEnd = "TheEnd",
   mobevents = "mobevents",
+  portals = "portals",
   schedulerWT = "schedulerWT",
   scoreboard = "scoreboard"
 }
@@ -173,6 +179,7 @@ export interface SuffixKey {
 export enum SUFFIX_KEY {
   actorprefix = "actorprefix",
   digp = "digp",
+  tickingarea = "tickingarea",
   VILLAGE_DWELLERS = "VILLAGE_DWELLERS",
   VILLAGE_INFO = "VILLAGE_INFO",
   VILLAGE_PLAYERS = "VILLAGE_PLAYERS",
@@ -182,6 +189,7 @@ export enum SUFFIX_KEY {
 
 export const actorprefix = /^actorprefix/;
 export const digp = /^digp/;
+export const tickingarea = /^tickingarea_/;
 export const village_dwellers = /VILLAGE_[0-9a-f\\-]+_DWELLERS/;
 export const village_info = /VILLAGE_[0-9a-f\\-]+_INFO/;
 export const village_players = /VILLAGE_[0-9a-f\\-]+_PLAYERS/;

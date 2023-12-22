@@ -67,7 +67,7 @@ export async function readDatabase(path: string): Promise<Entries> {
 
   await db.close();
 
-  delete entries.overworld;
+  // delete entries.overworld;
 
   return entries;
 }
