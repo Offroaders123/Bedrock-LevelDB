@@ -1,6 +1,6 @@
 import { read } from "nbtify";
 
-import type { NBTData, ReadOptions, ByteTag, BooleanTag, IntTag, LongTag, FloatTag, StringTag, RootTagLike } from "nbtify";
+import type { NBTData, ReadOptions, ByteTag, BooleanTag, IntTag, LongTag, FloatTag, StringTag, RootTagLike, ByteArrayTag, ShortTag } from "nbtify";
 
 export type Entry = [Key, Value];
 
@@ -196,7 +196,7 @@ export const village_dwellers = /VILLAGE_[0-9a-f\\-]+_DWELLERS/;
 export const village_info = /VILLAGE_[0-9a-f\\-]+_INFO/;
 export const village_players = /VILLAGE_[0-9a-f\\-]+_PLAYERS/;
 export const village_poi = /VILLAGE_[0-9a-f\\-]+_POI/;
-export const map = /map_\\-[0-9]+/;
+export const map = /map_\-[0-9]+/;
 
 export interface ChunkKey {
   x: number;
@@ -441,8 +441,22 @@ export interface VillagePoiInstance {
 }
 
 export interface Map {
-  [name: string]: never; // untyped atm
+  colors: ByteArrayTag;
+  decorations: unknown[];
+  dimension: ByteTag<Dimension>;
+  fullyExplored: BooleanTag;
+  height: ShortTag;
+  mapId: LongTag;
+  mapLocked: BooleanTag;
+  parentMapId: LongTag;
+  scale: ByteTag<MapScale>; // ~~might be a union of only a few values~~
+  unlimitedTracking: BooleanTag;
+  width: ShortTag;
+  xCenter: IntTag;
+  zCenter: IntTag;
 }
+
+export type MapScale = 0 | 1 | 2 | 3 | 4; // this is approximated, there are 5 levels of maps, looks like? The DB can account for this as well, there were 5 entries for a single map in the world, all with the same reference `parentMapId`.
 
 export interface Portals {
   data: {
