@@ -1,5 +1,5 @@
 import { LevelDB } from "leveldb-zlib";
-import { readEntry } from "./entry.js";
+import { readEntry, Dimension } from "./entry.js";
 
 import type { WorldKey, SuffixKey, ChunkKey, Value } from "./entry.js";
 
@@ -55,15 +55,11 @@ export async function readDatabase(path: string): Promise<Entries> {
     }
 
     const { x, y, type, dimension } = key;
-    let dimensionEntry: "overworld" | "nether" | "end";
-    switch (dimension){
-      case 0: dimensionEntry = "overworld"; break;
-    }
-    let chunk: Chunk | undefined = entries[dimensionEntry].find(entry => entry.x === x && entry.y === y);
+    let chunk: Chunk | undefined = entries[Dimension[dimension] as keyof typeof Dimension].find(entry => entry.x === x && entry.y === y);
 
     if (chunk === undefined){
       chunk = { x, y };
-      entries[dimensionEntry].push(chunk);
+      entries[Dimension[dimension] as keyof typeof Dimension].push(chunk);
     }
 
     chunk[type] = value;

@@ -11,9 +11,9 @@ export async function readEntry(entry: [Buffer, Buffer]): Promise<Entry> {
 }
 
 export enum Dimension {
-  Overworld = 0,
-  Nether,
-  End
+  overworld = 0,
+  nether,
+  end
 }
 
 export function readKey(key: Buffer): Key {
@@ -50,7 +50,7 @@ export function readKey(key: Buffer): Key {
   }
   const x = view.getInt32(0,true);
   const y = view.getInt32(4,true);
-  let dimension: Dimension = Dimension.Overworld;
+  let dimension: Dimension = Dimension.overworld;
   try {
     const attempt: number = view.getInt32(8,true);
     // console.log(attempt);
@@ -59,7 +59,7 @@ export function readKey(key: Buffer): Key {
       // console.log(dimension);
     }
   } catch {}
-  type = view.getUint8(dimension === Dimension.Overworld ? 8 : 11);
+  type = view.getUint8(dimension === Dimension.overworld ? 8 : 11);
   return { x, y, type: CHUNK_KEY[type]! as ChunkKey["type"], dimension } satisfies ChunkKey;
 }
 
