@@ -12,6 +12,7 @@ export async function readEntry(entry: [Buffer, Buffer]): Promise<Entry> {
 
 export function readKey(key: Buffer): Key {
   const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
+  if (key.length < 8) return { type: "", key };
   const type = view.getUint8(8);
   if (!(type in CHUNK_KEY)){
     const stringy: string = key.toString("utf-8");
@@ -99,6 +100,8 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
       // default: return value;
     }
   }
+  if (value[0] === 10) return read(value,{ ...format, strict: false });
+  return value;
 }
 
 export async function readNBTList<T extends RootTagLike>(data: Uint8Array): Promise<NBTData<T>[]> {

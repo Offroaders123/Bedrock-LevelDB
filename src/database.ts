@@ -62,6 +62,7 @@ export async function readDatabase(path: string): Promise<Entries> {
   }
 
   await db.close();
+  delete entries.chunks;
 
   return entries;
 }
