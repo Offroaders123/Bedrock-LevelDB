@@ -102,24 +102,24 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
 }
 
 export async function readNBTList<T extends RootTagLike>(data: Uint8Array): Promise<NBTData<T>[]> {
-  const blockEntities: NBTData<T>[] = [];
+  const entries: NBTData<T>[] = [];
 
   while (true){
     if (data.byteLength === 0) break;
     try {
-      const blockEntity: NBTData<T> = await read<T>(data,format);
-      blockEntities.push(blockEntity);
+      const entry: NBTData<T> = await read<T>(data,format);
+      entries.push(entry);
       break;
     } catch (error){
       const message: string = (error as Error).message ?? `${error}`;
       const length: number = parseInt(message.slice(46));
-      const blockEntity: NBTData<T> = await read<T>(data,{ ...format, strict: false });
-      blockEntities.push(blockEntity);
+      const entry: NBTData<T> = await read<T>(data,{ ...format, strict: false });
+      entries.push(entry);
       data = data.subarray(length);
     }
   }
 
-  return blockEntities;
+  return entries;
 }
 
 export const format: Required<ReadOptions> = {
