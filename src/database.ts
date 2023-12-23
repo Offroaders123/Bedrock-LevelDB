@@ -4,10 +4,12 @@ import { readEntry, Dimension } from "./entry.js";
 import type { WorldKey, SuffixKey, ChunkKey, Value } from "./entry.js";
 
 declare module "leveldb-zlib" {
+  // @ts-ignore
   export class LevelDB {
     [Symbol.asyncIterator](): ReturnType<Iterator[typeof Symbol.asyncIterator]>;
   }
 
+  // @ts-ignore
   export class Iterator {
     [Symbol.asyncIterator](): AsyncGenerator<[Buffer, Buffer], void, void>;
   }
