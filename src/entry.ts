@@ -27,6 +27,15 @@ export function readKey(key: Buffer): Key {
     case digp.test(stringy):
       return { type: "digp", key } satisfies SuffixKey;
 
+    case posTrackDB.test(stringy):
+      return { type: "posTrackDB", key } satisfies SuffixKey;
+
+    case player.test(stringy):
+      return { type: "player", key } satisfies SuffixKey;
+
+    case player_server.test(stringy):
+      return { type: "player_server", key } satisfies SuffixKey;
+
     case tickingarea.test(stringy):
       return { type: "tickingarea", key } satisfies SuffixKey;
 
@@ -62,7 +71,7 @@ export function readKey(key: Buffer): Key {
   const type = view.getUint8(dimension === Dimension.overworld ? 8 : 12);
   // console.log(CHUNK_KEY[type]);
   // console.log(Dimension[dimension],"\n");
-  return { x, y, dimension, type: CHUNK_KEY[type]! as ChunkKey["type"] } satisfies ChunkKey;
+  return { stringy, x, y, dimension, type: CHUNK_KEY[type]! as ChunkKey["type"] } satisfies ChunkKey;
 }
 
 export async function readValue(key: Key, value: Buffer): Promise<Value> {
@@ -71,6 +80,7 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
       case "AutonomousEntities": return read<AutonomousEntities>(value,format);
       case "BiomeData": return read<BiomeData>(value,format);
       case "game_flatworldlayers": return value as GameFlatWorldLayers;
+      case "PositionTrackDB-LastId": return read<PositionTrackDBLastId>(value,format);
       case "LevelChunkMetaDataDictionary": return value as LevelChunkMetaDataDictionary;
       case "~local_player": return read<LocalPlayer>(value,format);
       case "mobevents": return read<MobEvents>(value,format);
@@ -113,6 +123,9 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
       // SuffixKey
       case "actorprefix": return read<ActorPrefix>(value,format);
       case "digp": return value as DigP;
+      case "posTrackDB": return read<PosTrackDB>(value,format).then(data => { console.log(key.key.toString("utf-8"),data); return data; });
+      case "player": return read<PlayerServerDef>(value,format).then(data => { console.log(key.key.toString("utf-8"),data); return data; });
+      case "player_server": return read<PlayerServer>(value,format).then(data => { console.log(key.key.toString("utf-8"),data); return data; });
       case "VILLAGE_DWELLERS": return read<VillageDwellers>(value,format);
       case "VILLAGE_INFO": return read<VillageInfo>(value,format);
       case "VILLAGE_PLAYERS": return read<VillagePlayers>(value,format);
@@ -120,7 +133,7 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
       case "map": return read<Map>(value,format);
       case "tickingarea": return read<TickingArea>(value,format);
       // default: return value;
-      default: throw { key, value };
+      default: throw { key, value, nbt: await read(value,format) };
     }
   }
 }
@@ -164,6 +177,7 @@ export enum WORLD_KEY {
   game_flatworldlayers = "game_flatworldlayers",
   "~local_player" = "~local_player",
   AutonomousEntities = "AutonomousEntities",
+  "PositionTrackDB-LastId" = "PositionTrackDB-LastId",
   Overworld = "Overworld",
   Nether = "Nether",
   TheEnd = "TheEnd",
@@ -196,6 +210,9 @@ export interface SuffixKey {
 export enum SUFFIX_KEY {
   actorprefix = "actorprefix",
   digp = "digp",
+  posTrackDB = "posTrackDB",
+  player = "player",
+  player_server = "player_server",
   tickingarea = "tickingarea",
   VILLAGE_DWELLERS = "VILLAGE_DWELLERS",
   VILLAGE_INFO = "VILLAGE_INFO",
@@ -207,6 +224,9 @@ export enum SUFFIX_KEY {
 export interface SuffixKeyNameMap {
   actorprefix: ActorPrefix;
   digp: DigP;
+  posTrackDB: PosTrackDB;
+  player: PlayerServerDef;
+  player_server: PlayerServer;
   tickingarea: TickingArea;
   VILLAGE_DWELLERS: VillageDwellers;
   VILLAGE_INFO: VillageInfo;
@@ -217,6 +237,9 @@ export interface SuffixKeyNameMap {
 
 export const actorprefix = /^actorprefix/;
 export const digp = /^digp/;
+export const posTrackDB = /^PosTrackDB-/;
+export const player = /^player_/
+export const player_server = /^player_server_/
 export const tickingarea = /^tickingarea_/;
 export const village_dwellers = /VILLAGE_[0-9a-f\\-]+_DWELLERS/;
 export const village_info = /VILLAGE_[0-9a-f\\-]+_INFO/;
@@ -285,7 +308,7 @@ export interface ChunkKeyNameMap {
   LegacyVersion: LegacyVersion;
 }
 
-export type Value = NBTData<AutonomousEntities> | NBTData<BiomeData> | GameFlatWorldLayers | LevelChunkMetaDataDictionary | NBTData<LocalPlayer> | NBTData<MobEvents> | NBTData<Overworld> | NBTData<SchedulerWT> | NBTData<Scoreboard> | Data3D | Version | Data2D | Data2DLegacy | SubChunkPrefix | LegacyTerrain | BlockEntities | Entities | PendingTicks | LegacyBlockExtraData | BiomeState | FinalizedState | ConversionData | BorderBlocks | HardcodedSpawners | RandomTicks | CheckSums | GenerationSeed | GeneratedPreCavesAndCliffsBlending | BlendingBiomeHeight | MetaDataHash | BlendingData | ActorDigestVersion | LegacyVersion | ActorPrefix | DigP | NBTData<VillageDwellers> | NBTData<VillageInfo> | NBTData<VillagePlayers> | NBTData<VillagePois> | NBTData<Map> | NBTData<Portals> | NBTData<Nether> | NBTData<TheEnd> | NBTData<TickingArea>;
+export type Value = NBTData<AutonomousEntities> | NBTData<BiomeData> | GameFlatWorldLayers | LevelChunkMetaDataDictionary | NBTData<LocalPlayer> | NBTData<MobEvents> | NBTData<Overworld> | NBTData<SchedulerWT> | NBTData<Scoreboard> | Data3D | Version | Data2D | Data2DLegacy | SubChunkPrefix | LegacyTerrain | BlockEntities | Entities | PendingTicks | LegacyBlockExtraData | BiomeState | FinalizedState | ConversionData | BorderBlocks | HardcodedSpawners | RandomTicks | CheckSums | GenerationSeed | GeneratedPreCavesAndCliffsBlending | BlendingBiomeHeight | MetaDataHash | BlendingData | ActorDigestVersion | LegacyVersion | ActorPrefix | DigP | NBTData<VillageDwellers> | NBTData<VillageInfo> | NBTData<VillagePlayers> | NBTData<VillagePois> | NBTData<Map> | NBTData<Portals> | NBTData<Nether> | NBTData<TheEnd> | NBTData<TickingArea> | NBTData<PlayerServerDef> | NBTData<PlayerServer> | NBTData<PosTrackDB> | NBTData<PositionTrackDBLastId>;
 
 // WorldKey
 
@@ -560,4 +583,29 @@ export interface TickingArea {
   MinZ: IntTag;
   Name: StringTag;
   Preload: BooleanTag;
+}
+
+export interface PosTrackDB {
+  dim: IntTag<Dimension>;
+  id: StringTag;
+  pos: [IntTag, IntTag, IntTag];
+  status: ByteTag; // `BooleanTag`?
+  version: ByteTag; // same here
+}
+
+export interface PositionTrackDBLastId {
+  id: StringTag;
+  version: ByteTag;
+}
+
+export interface PlayerServerDef {
+  MsaId: StringTag;
+  PlatformOfflineId?: StringTag;
+  PlatformOnlineId?: StringTag;
+  SelfSignedId: StringTag;
+  ServerId: StringTag;
+}
+
+export interface PlayerServer {
+  [name: string]: unknown; // `Player` I'm pretty sure essentially, there might be more keys for server players than the plain `LocalPlayer` though.
 }

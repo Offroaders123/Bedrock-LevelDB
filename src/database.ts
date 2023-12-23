@@ -1,5 +1,5 @@
 import { LevelDB } from "leveldb-zlib";
-import { readEntry, Dimension } from "./entry.js";
+import { readEntry, Dimension, readKey } from "./entry.js";
 
 import type { WorldKey, SuffixKey, ChunkKey, Value } from "./entry.js";
 
@@ -40,6 +40,11 @@ export async function readDatabase(path: string): Promise<Entries> {
     end: [],
   };
 
+  // for await (const [keyBuffer] of db.getIterator({ keys: true, values: false })){
+  //   const key = readKey(keyBuffer);
+  //   console.log(key);
+  // }
+
   for await (const entry of db.getIterator()){
     const result = await readEntry(entry);
     // console.log(result);
@@ -48,8 +53,11 @@ export async function readDatabase(path: string): Promise<Entries> {
 
     if (typeof key !== "object"){
       entries[key] = value;
+      console.log(key,value);
       continue;
     }
+
+    continue;
 
     if (!("x" in key) || !("y" in key)){
       entries[key.key.toString() as `${SuffixKey["type"]}${string}`] = value;
