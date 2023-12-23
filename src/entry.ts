@@ -173,6 +173,21 @@ export enum WORLD_KEY {
   scoreboard = "scoreboard"
 }
 
+export interface WorldKeyNameMap {
+  BiomeData: BiomeData;
+  LevelChunkMetaDataDictionary: LevelChunkMetaDataDictionary;
+  game_flatworldlayers: GameFlatWorldLayers;
+  "~local_player": LocalPlayer;
+  AutonomousEntities: AutonomousEntities;
+  Overworld: Overworld;
+  Nether: Nether;
+  TheEnd: TheEnd;
+  mobevents: MobEvents;
+  portals: Portals;
+  schedulerWT: SchedulerWT;
+  scoreboard: Scoreboard;
+}
+
 export interface SuffixKey {
   type: keyof typeof SUFFIX_KEY;
   key: Buffer;
@@ -187,6 +202,17 @@ export enum SUFFIX_KEY {
   VILLAGE_PLAYERS = "VILLAGE_PLAYERS",
   VILLAGE_POI = "VILLAGE_POI",
   map = "map"
+}
+
+export interface SuffixKeyNameMap {
+  actorprefix: ActorPrefix;
+  digp: DigP;
+  tickingarea: TickingArea;
+  VILLAGE_DWELLERS: VillageDwellers;
+  VILLAGE_INFO: VillageInfo;
+  VILLAGE_PLAYERS: VillagePlayers;
+  VILLAGE_POI: VillagePois;
+  map: Map;
 }
 
 export const actorprefix = /^actorprefix/;
@@ -230,6 +256,33 @@ export enum CHUNK_KEY {
   BlendingData,
   ActorDigestVersion,
   LegacyVersion = 118
+}
+
+export interface ChunkKeyNameMap {
+  Data3D: Data3D;
+  Version: Version;
+  Data2D: Data2D;
+  Data2DLegacy: Data2DLegacy;
+  SubChunkPrefix: SubChunkPrefix;
+  LegacyTerrain: LegacyTerrain;
+  BlockEntity: BlockEntity;
+  Entity: Entity;
+  PendingTicks: PendingTicks;
+  LegacyBlockExtraData: LegacyBlockExtraData;
+  BiomeState: BiomeState;
+  FinalizedState: FinalizedState;
+  ConversionData: ConversionData;
+  BorderBlocks: BorderBlocks;
+  HardcodedSpawners: HardcodedSpawners;
+  RandomTicks: RandomTicks;
+  CheckSums: CheckSums;
+  GenerationSeed: GenerationSeed;
+  GeneratedPreCavesAndCliffsBlending: GeneratedPreCavesAndCliffsBlending;
+  BlendingBiomeHeight: BlendingBiomeHeight;
+  MetaDataHash: MetaDataHash;
+  BlendingData: BlendingData;
+  ActorDigestVersion: ActorDigestVersion;
+  LegacyVersion: LegacyVersion;
 }
 
 export type Value = NBTData<AutonomousEntities> | NBTData<BiomeData> | GameFlatWorldLayers | LevelChunkMetaDataDictionary | NBTData<LocalPlayer> | NBTData<MobEvents> | NBTData<Overworld> | NBTData<SchedulerWT> | NBTData<Scoreboard> | Data3D | Version | Data2D | Data2DLegacy | SubChunkPrefix | LegacyTerrain | BlockEntities | Entities | PendingTicks | LegacyBlockExtraData | BiomeState | FinalizedState | ConversionData | BorderBlocks | HardcodedSpawners | RandomTicks | CheckSums | GenerationSeed | GeneratedPreCavesAndCliffsBlending | BlendingBiomeHeight | MetaDataHash | BlendingData | ActorDigestVersion | LegacyVersion | ActorPrefix | DigP | NBTData<VillageDwellers> | NBTData<VillageInfo> | NBTData<VillagePlayers> | NBTData<VillagePois> | NBTData<Map> | NBTData<Portals> | NBTData<Nether> | NBTData<TheEnd> | NBTData<TickingArea>;
