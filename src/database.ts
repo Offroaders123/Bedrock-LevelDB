@@ -53,7 +53,7 @@ export async function readDatabase(path: string): Promise<Entries> {
 
     if (typeof key !== "object"){
       entries[key] = value;
-      console.log(key,value);
+      // console.log(key,value);
       continue;
     }
 

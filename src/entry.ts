@@ -1,6 +1,6 @@
 import { read } from "nbtify";
 
-import type { NBTData, ReadOptions, ByteTag, BooleanTag, IntTag, LongTag, FloatTag, StringTag, RootTagLike, ByteArrayTag, ShortTag } from "nbtify";
+import type { NBTData, ReadOptions, ByteTag, BooleanTag, IntTag, LongTag, FloatTag, StringTag, RootTagLike, ByteArrayTag, ShortTag, IntArrayTag } from "nbtify";
 
 export type Entry = [Key, Value];
 
@@ -79,6 +79,9 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
     switch (key as WorldKey){
       case "AutonomousEntities": return read<AutonomousEntities>(value,format);
       case "BiomeData": return read<BiomeData>(value,format);
+      case "dimension0": return read<LegacyDimension0>(value,format);//.then(data => { console.log(key,data.data); return data; });
+      case "dimension1": return read<LegacyDimension1>(value,format);//.then(data => { console.log(key,data.data); return data; });
+      case "mVillages": return read<LegacyMVillages>(value,format);//.then(data => { console.log(key,data.data); return data; });
       case "game_flatworldlayers": return value as GameFlatWorldLayers;
       case "PositionTrackDB-LastId": return read<PositionTrackDBLastId>(value,format);
       case "LevelChunkMetaDataDictionary": return value as LevelChunkMetaDataDictionary;
@@ -123,9 +126,9 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
       // SuffixKey
       case "actorprefix": return read<ActorPrefix>(value,format);
       case "digp": return value as DigP;
-      case "posTrackDB": return read<PosTrackDB>(value,format).then(data => { console.log(key.key.toString("utf-8"),data); return data; });
-      case "player": return read<PlayerServerDef>(value,format).then(data => { console.log(key.key.toString("utf-8"),data); return data; });
-      case "player_server": return read<PlayerServer>(value,format).then(data => { console.log(key.key.toString("utf-8"),data); return data; });
+      case "posTrackDB": return read<PosTrackDB>(value,format);//.then(data => { console.log(key.key.toString("utf-8"),data); return data; });
+      case "player": return read<PlayerServerDef>(value,format);//.then(data => { console.log(key.key.toString("utf-8"),data); return data; });
+      case "player_server": return read<PlayerServer>(value,format);//.then(data => { console.log(key.key.toString("utf-8"),data); return data; });
       case "VILLAGE_DWELLERS": return read<VillageDwellers>(value,format);
       case "VILLAGE_INFO": return read<VillageInfo>(value,format);
       case "VILLAGE_PLAYERS": return read<VillagePlayers>(value,format);
@@ -173,6 +176,9 @@ export type WorldKey = keyof typeof WORLD_KEY;
 
 export enum WORLD_KEY {
   BiomeData = "BiomeData",
+  dimension0 = "dimension0",
+  dimension1 = "dimension1",
+  mVillages = "mVillages",
   LevelChunkMetaDataDictionary = "LevelChunkMetaDataDictionary",
   game_flatworldlayers = "game_flatworldlayers",
   "~local_player" = "~local_player",
@@ -189,6 +195,9 @@ export enum WORLD_KEY {
 
 export interface WorldKeyNameMap {
   BiomeData: BiomeData;
+  dimension0: LegacyDimension0;
+  dimension1: LegacyDimension1;
+  mVillages: LegacyMVillages;
   LevelChunkMetaDataDictionary: LevelChunkMetaDataDictionary;
   game_flatworldlayers: GameFlatWorldLayers;
   "~local_player": LocalPlayer;
@@ -308,7 +317,7 @@ export interface ChunkKeyNameMap {
   LegacyVersion: LegacyVersion;
 }
 
-export type Value = NBTData<AutonomousEntities> | NBTData<BiomeData> | GameFlatWorldLayers | LevelChunkMetaDataDictionary | NBTData<LocalPlayer> | NBTData<MobEvents> | NBTData<Overworld> | NBTData<SchedulerWT> | NBTData<Scoreboard> | Data3D | Version | Data2D | Data2DLegacy | SubChunkPrefix | LegacyTerrain | BlockEntities | Entities | PendingTicks | LegacyBlockExtraData | BiomeState | FinalizedState | ConversionData | BorderBlocks | HardcodedSpawners | RandomTicks | CheckSums | GenerationSeed | GeneratedPreCavesAndCliffsBlending | BlendingBiomeHeight | MetaDataHash | BlendingData | ActorDigestVersion | LegacyVersion | ActorPrefix | DigP | NBTData<VillageDwellers> | NBTData<VillageInfo> | NBTData<VillagePlayers> | NBTData<VillagePois> | NBTData<Map> | NBTData<Portals> | NBTData<Nether> | NBTData<TheEnd> | NBTData<TickingArea> | NBTData<PlayerServerDef> | NBTData<PlayerServer> | NBTData<PosTrackDB> | NBTData<PositionTrackDBLastId>;
+export type Value = NBTData<AutonomousEntities> | NBTData<BiomeData> | GameFlatWorldLayers | LevelChunkMetaDataDictionary | NBTData<LocalPlayer> | NBTData<MobEvents> | NBTData<Overworld> | NBTData<SchedulerWT> | NBTData<Scoreboard> | Data3D | Version | Data2D | Data2DLegacy | SubChunkPrefix | LegacyTerrain | BlockEntities | Entities | PendingTicks | LegacyBlockExtraData | BiomeState | FinalizedState | ConversionData | BorderBlocks | HardcodedSpawners | RandomTicks | CheckSums | GenerationSeed | GeneratedPreCavesAndCliffsBlending | BlendingBiomeHeight | MetaDataHash | BlendingData | ActorDigestVersion | LegacyVersion | ActorPrefix | DigP | NBTData<VillageDwellers> | NBTData<VillageInfo> | NBTData<VillagePlayers> | NBTData<VillagePois> | NBTData<Map> | NBTData<Portals> | NBTData<Nether> | NBTData<TheEnd> | NBTData<TickingArea> | NBTData<PlayerServerDef> | NBTData<PlayerServer> | NBTData<PosTrackDB> | NBTData<PositionTrackDBLastId> | NBTData<LegacyDimension0> | NBTData<LegacyDimension1> | NBTData<LegacyMVillages>;
 
 // WorldKey
 
@@ -608,4 +617,73 @@ export interface PlayerServerDef {
 
 export interface PlayerServer {
   [name: string]: unknown; // `Player` I'm pretty sure essentially, there might be more keys for server players than the plain `LocalPlayer` though.
+}
+
+export interface LegacyDimension0 {
+  mansion: {
+    structures?: Structure[];
+  };
+  mineshaft: {
+    structures?: Structure[];
+  };
+  oceans: {
+    structures?: Structure[];
+  };
+  stronghold: {
+    structures?: Structure[];
+  };
+  village: {
+    structures?: Structure[];
+  };
+}
+
+export interface LegacyDimension1 {
+  bridge: {
+    structures?: Structure[];
+  };
+}
+
+export interface Structure {
+  BB: IntArrayTag;
+  Children: StructureChildren[];
+  ChunkX: IntTag;
+  ChunkZ: IntTag;
+  ID: IntTag; // union, or unique? I think maybe union of structure piece variants; should be unique to each 'structure' if made into a union type.
+  iscreated?: BooleanTag; // likely boolean hehe, maybe optional? *might be only for Ocean Monument
+  Valid?: BooleanTag; // villages
+}
+
+export interface StructureChildren {
+  Abandoned?: BooleanTag; // villages
+  Entrances?: [IntArrayTag, IntArrayTag, IntArrayTag]; // mineshaft
+  BB: IntArrayTag;
+  CA?: IntTag; // villages
+  CB?: IntTag; // villages
+  CC?: IntTag; // villages
+  CD?: IntTag; // villages
+  Chest?: BooleanTag; // villages; bridge (fortress)
+  D?: IntTag; // mineshaft
+  Desert?: BooleanTag; // villages
+  HPos?: IntTag; // villages
+  ID: IntTag;
+  Num?: IntTag; // mineshaft
+  Mob?: BooleanTag; // bridge (fortress)
+  hps?: ByteTag; // mineshaft
+  hr?: ByteTag; // mineshaft
+  sc?: ByteTag; // mineshaft
+  Savannah?: BooleanTag; // villages
+  Seed?: IntTag; // bridge (fortress)
+  Taiga?: BooleanTag; // villages
+  Terrace?: BooleanTag; // villages
+  tf?: ByteTag; // mineshaft
+  VCount?: IntTag; // villages
+  gendepth: IntTag;
+  orientation: IntTag; // union of 4 cardinal directions? `255 (-1) | 0 | 1 | 2 | 3`
+}
+
+export interface LegacyMVillages {
+  data: {
+    Tick: IntTag;
+    Villages: unknown[];
+  };
 }
