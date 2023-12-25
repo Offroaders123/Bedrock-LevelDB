@@ -57,7 +57,7 @@ export async function readDatabase(path: string): Promise<Entries> {
       continue;
     }
 
-    continue;
+    // continue;
 
     if (!("x" in key) || !("y" in key)){
       entries[key.key.toString() as `${SuffixKey["type"]}${string}`] = value;
