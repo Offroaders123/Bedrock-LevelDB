@@ -3,25 +3,27 @@ import { readDatabase } from "../src/index.js";
 
 const WORLD = fileURLToPath(new URL("../test/world/My World/db",import.meta.url));
 
+const actorprefixOrDigp = /actorprefix|digp/;
 const data = await readDatabase(WORLD);
 console.log(
-  Object.fromEntries(
+  // Object.fromEntries(
     Object.entries(data)
-      .filter(entry => entry[0].startsWith("actorprefix"))
-      // .filter(entry => entry[1].data.identifier === "minecraft:strider")
+      .filter(entry => entry[0].match(actorprefixOrDigp))
       .map(([key,value]) => {
-        const buffer: Buffer = Buffer.from(key.replace("actorprefix",""));
+        const buffer: Buffer = Buffer.from(key.replace(actorprefixOrDigp,""));
         // console.log(buffer);
-        const x: number = buffer.readUInt32BE(0);
-        const y: number = buffer.readUInt32BE(4);
-        const name: string = `${x}, ${y}`;
-        const id: string = value.data.identifier;
-        // const dimension = value.data.dimension;
-        // console.log(value.data);
-        const trailing: Buffer | null = buffer.length > 8 ? buffer.subarray(8) : null;
-        return trailing !== null
-          ? [name,[key,trailing]]
-          : [name,key];
+
+        switch (true){
+          case key.startsWith("actorprefix"): {
+            const x: number = buffer.readUInt32BE(0);
+            const y: number = buffer.readUInt32BE(0);
+            const name: string = `${x}, ${y}`;
+            return [name,value.data.identifier];
+          }
+          case key.startsWith("digp"): {
+            return [buffer,value];
+          }
+        }
       })
-    )
+  // )
 );
