@@ -84,7 +84,31 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
       case "mVillages": return read<LegacyMVillages>(value,format);//.then(data => { console.log(key,data.data); return data; });
       case "game_flatworldlayers": return value as GameFlatWorldLayers;
       case "PositionTrackDB-LastId": return read<PositionTrackDBLastId>(value,format);
-      case "LevelChunkMetaDataDictionary": return value as LevelChunkMetaDataDictionary;
+      case "LevelChunkMetaDataDictionary": {
+        // This "function" is a custom derivation of `readNBTList()`, because I needed to add in the handling for the `count` and `key` values. Eventually these shouldn't use duplicated logic.
+        const count = value.readUint32LE(0);
+        value = value.subarray(4);
+        const entries: LevelChunkMetaDataDictionaryEntry[] = [];
+
+        while (true){
+          if (value.byteLength === 0) break;
+          try {
+            const tag = await read<LevelChunkMetaDataDictionaryTag>(value.subarray(8),format);
+            const key: string = value.subarray(0,8).join(" "); // Temporary string, I don't know how these should be read more accurately yet.
+            entries.push({ key, tag });
+            break;
+          } catch (error){
+            const message: string = (error as Error).message ?? `${error}`;
+            const length: number = parseInt(message.slice(46));
+            const tag = await read<LevelChunkMetaDataDictionaryTag>(value.subarray(8),{ ...format, strict: false });
+            const key: string = value.subarray(0,8).join(" ");
+            entries.push({ key, tag });
+            value = value.subarray(8 + length);
+          }
+        }
+      
+        return { count, entries } satisfies LevelChunkMetaDataDictionary;
+      }
       case "~local_player": return read<LocalPlayer>(value,format);
       case "mobevents": return read<MobEvents>(value,format);
       case "Overworld": return read<Overworld>(value,format);
@@ -336,7 +360,38 @@ export interface BiomeDataList {
 
 export type GameFlatWorldLayers = Buffer;
 
-export type LevelChunkMetaDataDictionary = Buffer;
+export interface LevelChunkMetaDataDictionary {
+  count: number;
+  entries: LevelChunkMetaDataDictionaryEntry[];
+}
+
+export interface LevelChunkMetaDataDictionaryEntry {
+  key: string;
+  tag: NBTData<LevelChunkMetaDataDictionaryTag>;
+}
+
+export interface LevelChunkMetaDataDictionaryTag {
+  BiomeBaseGameVersion: StringTag;
+  DimensionName: DimensionName;
+  GenerationSeed: LongTag;
+  GeneratorType: IntTag; // could be a union instead? `1` appears to be the regular setting.
+  LastSavedBaseGameVersion?: StringTag;
+  LastSavedDimensionHeightRange?: DimensionHeightRange;
+  OriginalBaseGameVersion: StringTag;
+  OriginalDimensionHeightRange: DimensionHeightRange;
+  // Why are these `ShortTag`s? The values look like booleans! dangit Mojang.
+  // and I think these are unique to the Overworld, at the moment at least.
+  Overworld1_18HeightExtended?: ShortTag;
+  UnderWaterLavaLakeFixed?: ShortTag;
+  WorldGenBelowZeroFixed?: ShortTag;
+}
+
+export type DimensionName = "Overworld" | "Nether" | "TheEnd";
+
+export interface DimensionHeightRange {
+  max: ShortTag;
+  min: ShortTag;
+}
 
 export interface LocalPlayer {
   [name: string]: never; // from Region-Types
