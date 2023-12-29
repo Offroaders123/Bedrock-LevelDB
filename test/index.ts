@@ -1,29 +1,18 @@
 import { fileURLToPath } from "node:url";
 import { readDatabase } from "../src/index.js";
+import { read } from "nbtify";
 
-const WORLD = fileURLToPath(new URL("../test/world/My World/db",import.meta.url));
+const WORLD = fileURLToPath(new URL("../test/world/dOCMZTQ2AAA=/db",import.meta.url));
 
-const actorprefixOrDigp = /actorprefix|digp/;
 const data = await readDatabase(WORLD);
-console.log(
-  // Object.fromEntries(
-    Object.entries(data)
-      .filter(entry => entry[0].match(actorprefixOrDigp))
-      .map(([key,value]) => {
-        const buffer: Buffer = Buffer.from(key.replace(actorprefixOrDigp,""));
-        // console.log(buffer);
+// Object.entries(data)
+//   .filter(([key]) => !/(^overworld|nether|end$)|(^actorprefix|digp)/.test(key))
+//   .forEach(([key,value]) => console.log(key))//,value.data ?? value));
 
-        switch (true){
-          case key.startsWith("actorprefix"): {
-            const x: number = buffer.readUInt32BE(0);
-            const y: number = buffer.readUInt32BE(0);
-            const name: string = `${x}, ${y}`;
-            return [name,value.data.identifier];
-          }
-          case key.startsWith("digp"): {
-            return [buffer,value];
-          }
-        }
-      })
-  // )
-);
+// console.log(data.BiomeData.data);
+// console.log(data.Overworld.data);
+// console.log(data.Nether.data);
+// console.log(data.TheEnd.data);
+
+console.log(data.LevelChunkMetaDataDictionary);
+console.log(await read((data.LevelChunkMetaDataDictionary as Buffer).subarray(12),{ name: true, strict: false }));
