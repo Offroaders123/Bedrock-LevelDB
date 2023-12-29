@@ -94,14 +94,14 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
           if (value.byteLength === 0) break;
           try {
             const tag = await read<LevelChunkMetaDataDictionaryTag>(value.subarray(8),format);
-            const key: string = value.subarray(0,8).join(" "); // Temporary string, I don't know how these should be read more accurately yet.
+            const key = value.subarray(0,8); // Temporary string, I don't know how these should be read more accurately yet.
             entries.push({ key, tag });
             break;
           } catch (error){
             const message: string = (error as Error).message ?? `${error}`;
             const length: number = parseInt(message.slice(46));
             const tag = await read<LevelChunkMetaDataDictionaryTag>(value.subarray(8),{ ...format, strict: false });
-            const key: string = value.subarray(0,8).join(" ");
+            const key = value.subarray(0,8);
             entries.push({ key, tag });
             value = value.subarray(8 + length);
           }
@@ -366,7 +366,7 @@ export interface LevelChunkMetaDataDictionary {
 }
 
 export interface LevelChunkMetaDataDictionaryEntry {
-  key: string;
+  key: Buffer; // temporary, I'm not sure how this is supposed to be parsed nicely
   tag: NBTData<LevelChunkMetaDataDictionaryTag>;
 }
 
@@ -382,7 +382,7 @@ export interface LevelChunkMetaDataDictionaryTag {
   // Why are these `ShortTag`s? The values look like booleans! dangit Mojang.
   // and I think these are unique to the Overworld, at the moment at least.
   Overworld1_18HeightExtended?: ShortTag;
-  UnderWaterLavaLakeFixed?: ShortTag;
+  UnderwaterLavaLakeFixed?: ShortTag;
   WorldGenBelowZeroFixed?: ShortTag;
 }
 
