@@ -16,49 +16,58 @@ export enum Dimension {
   end
 }
 
-export function readKey(key: Buffer): Key {
-  const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
-  const stringy: string = key.toString("utf-8");
+export function readSuffixKey<K extends keyof SuffixKeyNameMap>(key: Buffer): SuffixKeyNameMap[K] | null {
+  const keyString: string = key.toString("utf-8");
+  let keyType: keyof SuffixKeyNameMap | null;
 
   switch (true){
-    case actorprefix.test(stringy):
-      return { type: "actorprefix", key } satisfies SuffixKey;
-
-    case digp.test(stringy):
-      return { type: "digp", key } satisfies SuffixKey;
-
-    case posTrackDB.test(stringy):
-      return { type: "posTrackDB", key } satisfies SuffixKey;
-
-    case player.test(stringy):
-      return { type: "player", key } satisfies SuffixKey;
-
-    case player_server.test(stringy):
-      return { type: "player_server", key } satisfies SuffixKey;
-
-    case tickingarea.test(stringy):
-      return { type: "tickingarea", key } satisfies SuffixKey;
-
-    case village_dwellers.test(stringy):
-      return { type: "VILLAGE_DWELLERS", key } satisfies SuffixKey;
-
-    case village_info.test(stringy):
-      return { type: "VILLAGE_INFO", key } satisfies SuffixKey;
-
-    case village_players.test(stringy):
-      return { type: "VILLAGE_PLAYERS", key } satisfies SuffixKey;
-
-    case village_poi.test(stringy):
-      return { type: "VILLAGE_POI", key } satisfies SuffixKey;
-
-    case map.test(stringy):
-      return { type: "map", key } satisfies SuffixKey;
+    case actorprefix.test(keyString): keyType = SUFFIX_KEY.actorprefix; break;
+    case digp.test(keyString): keyType = SUFFIX_KEY.digp; break;
+    case posTrackDB.test(keyString): keyType = SUFFIX_KEY.posTrackDB; break;
+    case player.test(keyString): keyType = SUFFIX_KEY.player; break;
+    case player_server.test(keyString): keyType = SUFFIX_KEY.player_server; break;
+    case tickingarea.test(keyString): keyType = SUFFIX_KEY.tickingarea; break;
+    case village_dwellers.test(keyString): keyType = SUFFIX_KEY.VILLAGE_DWELLERS; break;
+    case village_info.test(keyString): keyType = SUFFIX_KEY.VILLAGE_INFO; break;
+    case village_players.test(keyString): keyType = SUFFIX_KEY.VILLAGE_PLAYERS; break;
+    case village_poi.test(keyString): keyType = SUFFIX_KEY.VILLAGE_POI; break;
+    case map.test(keyString): keyType = SUFFIX_KEY.map; break;
+    default: keyType = null; break;
   }
-  // console.log(stringy);
 
+  switch (keyType){
+    case SUFFIX_KEY.actorprefix: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
+    case SUFFIX_KEY.digp: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
+    case SUFFIX_KEY.posTrackDB: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
+    case SUFFIX_KEY.player: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
+    case SUFFIX_KEY.player_server: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
+    case SUFFIX_KEY.tickingarea: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
+    case SUFFIX_KEY.VILLAGE_DWELLERS: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
+    case SUFFIX_KEY.VILLAGE_INFO: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
+    case SUFFIX_KEY.VILLAGE_PLAYERS: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
+    case SUFFIX_KEY.VILLAGE_POI: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
+    case SUFFIX_KEY.map: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
+    default: return null;
+  }
+}
+
+export function readWorldKey<K extends keyof WorldKeyNameMap>(key: Buffer): WorldKeyNameMap[K] | null {
+  const stringy: string = key.toString("utf-8");
   if (stringy in WORLD_KEY){
     return stringy as WorldKey;
   }
+  return null;
+}
+
+export function readKey(key: Buffer): Key {
+  const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
+
+  const suffixKey = readSuffixKey(key);
+  if (suffixKey !== null) return suffixKey;
+  // console.log(stringy);
+
+  const worldKey = readWorldKey(key);
+  if (worldKey !== null) return worldKey;
 
   // console.log(key)//,stringy);
 
@@ -71,7 +80,7 @@ export function readKey(key: Buffer): Key {
   const type = view.getUint8(dimension === Dimension.overworld ? 8 : 12);
   // console.log(CHUNK_KEY[type]);
   // console.log(Dimension[dimension],"\n");
-  return { stringy, x, y, dimension, type: CHUNK_KEY[type]! as ChunkKey["type"] } satisfies ChunkKey;
+  return { x, y, dimension, type: CHUNK_KEY[type]! as ChunkKey["type"] } satisfies ChunkKey;
 }
 
 export async function readValue(key: Key, value: Buffer): Promise<Value> {
@@ -235,8 +244,9 @@ export interface WorldKeyNameMap {
   scoreboard: Scoreboard;
 }
 
-export interface SuffixKey {
-  type: keyof typeof SUFFIX_KEY;
+export interface SuffixKey<K extends keyof SuffixKeyNameMap = keyof SuffixKeyNameMap> {
+  type: K;
+  // value: SuffixKeyNameMap[K];
   key: Buffer;
 }
 

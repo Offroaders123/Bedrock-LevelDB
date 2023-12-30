@@ -31,7 +31,7 @@ export type Chunk = {
 }
 
 export async function readDatabase(path: string): Promise<Entries> {
-  const db = new LevelDB(path);
+  const db = new LevelDB(path,{ createIfMissing: false });
   await db.open();
 
   const entries: Entries = {
