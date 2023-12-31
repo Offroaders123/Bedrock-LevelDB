@@ -223,7 +223,7 @@ export const format: Required<ReadOptions> = {
 
 export type Key = WorldKey | SuffixKey | ChunkKey;
 
-export type WorldKey = keyof typeof WORLD_KEY;
+export type WorldKey<K extends keyof WorldKeyNameMap = keyof WorldKeyNameMap> = WorldKeyNameMap[K];
 
 export enum WORLD_KEY {
   BiomeData = "BiomeData",
@@ -245,26 +245,28 @@ export enum WORLD_KEY {
 }
 
 export interface WorldKeyNameMap {
-  BiomeData: BiomeData;
-  dimension0: LegacyDimension0;
-  dimension1: LegacyDimension1;
-  mVillages: LegacyMVillages;
+  BiomeData: NBTData<BiomeData>;
+  dimension0: NBTData<LegacyDimension0>;
+  dimension1: NBTData<LegacyDimension1>;
+  mVillages: NBTData<LegacyMVillages>;
   LevelChunkMetaDataDictionary: LevelChunkMetaDataDictionary;
   game_flatworldlayers: GameFlatWorldLayers;
-  "~local_player": LocalPlayer;
-  AutonomousEntities: AutonomousEntities;
-  Overworld: Overworld;
-  Nether: Nether;
-  TheEnd: TheEnd;
-  mobevents: MobEvents;
-  portals: Portals;
-  schedulerWT: SchedulerWT;
-  scoreboard: Scoreboard;
+  "~local_player": NBTData<LocalPlayer>;
+  AutonomousEntities: NBTData<AutonomousEntities>;
+  Overworld: NBTData<Overworld>;
+  Nether: NBTData<Nether>;
+  TheEnd: NBTData<TheEnd>;
+  mobevents: NBTData<MobEvents>;
+  portals: NBTData<Portals>;
+  schedulerWT: NBTData<SchedulerWT>;
+  scoreboard: NBTData<Scoreboard>;
 }
 
-export interface SuffixKey<K extends keyof SuffixKeyNameMap = keyof SuffixKeyNameMap> {
+export type SuffixKey<K extends keyof SuffixKeyNameMap = keyof SuffixKeyNameMap> = SuffixKeyEntry<K>;
+
+export interface SuffixKeyEntry<K extends keyof SuffixKeyNameMap = keyof SuffixKeyNameMap> {
   type: K;
-  // value: SuffixKeyNameMap[K];
+  value: SuffixKeyNameMap[K];
   key: Buffer;
 }
 
@@ -285,15 +287,15 @@ export enum SUFFIX_KEY {
 export interface SuffixKeyNameMap {
   actorprefix: ActorPrefix;
   digp: DigP;
-  posTrackDB: PosTrackDB;
-  player: PlayerServerDef;
-  player_server: PlayerServer;
-  tickingarea: TickingArea;
-  VILLAGE_DWELLERS: VillageDwellers;
-  VILLAGE_INFO: VillageInfo;
-  VILLAGE_PLAYERS: VillagePlayers;
-  VILLAGE_POI: VillagePois;
-  map: Map;
+  posTrackDB: NBTData<PosTrackDB>;
+  player: NBTData<PlayerServerDef>;
+  player_server: NBTData<PlayerServer>;
+  tickingarea: NBTData<TickingArea>;
+  VILLAGE_DWELLERS: NBTData<VillageDwellers>;
+  VILLAGE_INFO: NBTData<VillageInfo>;
+  VILLAGE_PLAYERS: NBTData<VillagePlayers>;
+  VILLAGE_POI: NBTData<VillagePois>;
+  map: NBTData<Map>;
 }
 
 export const actorprefix = /^actorprefix/;
@@ -308,11 +310,14 @@ export const village_players = /VILLAGE_[0-9a-f\\-]+_PLAYERS/;
 export const village_poi = /VILLAGE_[0-9a-f\\-]+_POI/;
 export const map = /map_\-[0-9]+/;
 
-export interface ChunkKey {
+export type ChunkKey<K extends keyof ChunkKeyNameMap = keyof ChunkKeyNameMap> = ChunkKeyEntry<K>;
+
+export interface ChunkKeyEntry<K extends keyof ChunkKeyNameMap = keyof ChunkKeyNameMap> {
   x: number;
   y: number;
   type: keyof typeof CHUNK_KEY;
   dimension: Dimension;
+  value: ChunkKeyNameMap[K];
 }
 
 export enum CHUNK_KEY {
