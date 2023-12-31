@@ -16,6 +16,20 @@ export enum Dimension {
   end
 }
 
+export function readKey(key: Buffer): Key {
+  const suffixKey = readSuffixKey(key);
+  if (suffixKey !== null) return suffixKey;
+  // console.log(stringy);
+
+  const worldKey = readWorldKey(key);
+  if (worldKey !== null) return worldKey;
+
+  // console.log(key)//,stringy);
+
+  const chunkKey = readChunkKey(key);
+  return chunkKey;
+}
+
 export function readSuffixKey<K extends keyof SuffixKeyNameMap>(key: Buffer): SuffixKeyNameMap[K] | null {
   const keyString: string = key.toString("utf-8");
   let keyType: keyof SuffixKeyNameMap | null;
@@ -59,118 +73,122 @@ export function readWorldKey<K extends keyof WorldKeyNameMap>(key: Buffer): Worl
   return null;
 }
 
-export function readKey(key: Buffer): Key {
+export function readChunkKey<K extends keyof ChunkKeyNameMap>(key: Buffer): ChunkKeyNameMap[K] | null {
   const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
-
-  const suffixKey = readSuffixKey(key);
-  if (suffixKey !== null) return suffixKey;
-  // console.log(stringy);
-
-  const worldKey = readWorldKey(key);
-  if (worldKey !== null) return worldKey;
-
-  // console.log(key)//,stringy);
 
   const x = view.getInt32(0,true);
   const y = view.getInt32(4,true);
-  let dimension: Dimension = Dimension.overworld;
-  try {
-    dimension = view.getInt32(8,true);
-  } catch {}
+  let dimension: Dimension = key.byteLength < 12 ? Dimension.overworld : view.getInt32(8,true);
   const type = view.getUint8(dimension === Dimension.overworld ? 8 : 12);
   // console.log(CHUNK_KEY[type]);
   // console.log(Dimension[dimension],"\n");
+
   return { x, y, dimension, type: CHUNK_KEY[type]! as ChunkKey["type"] } satisfies ChunkKey;
 }
 
 export async function readValue(key: Key, value: Buffer): Promise<Value> {
   if (typeof key === "string"){
-    switch (key as WorldKey){
-      case "AutonomousEntities": return read<AutonomousEntities>(value,format);
-      case "BiomeData": return read<BiomeData>(value,format);
-      case "dimension0": return read<LegacyDimension0>(value,format);//.then(data => { console.log(key,data.data); return data; });
-      case "dimension1": return read<LegacyDimension1>(value,format);//.then(data => { console.log(key,data.data); return data; });
-      case "mVillages": return read<LegacyMVillages>(value,format);//.then(data => { console.log(key,data.data); return data; });
-      case "game_flatworldlayers": return value as GameFlatWorldLayers;
-      case "PositionTrackDB-LastId": return read<PositionTrackDBLastId>(value,format);
-      case "LevelChunkMetaDataDictionary": {
-        // This "function" is a custom derivation of `readNBTList()`, because I needed to add in the handling for the `count` and `key` values. Eventually these shouldn't use duplicated logic.
-        const count = value.readUint32LE(0);
-        value = value.subarray(4);
-        const entries: LevelChunkMetaDataDictionaryEntry[] = [];
-
-        while (true){
-          if (value.byteLength === 0) break;
-          try {
-            const tag = await read<LevelChunkMetaDataDictionaryTag>(value.subarray(8),format);
-            const key = value.subarray(0,8); // Temporary string, I don't know how these should be read more accurately yet.
-            entries.push({ key, tag });
-            break;
-          } catch (error){
-            const message: string = (error as Error).message ?? `${error}`;
-            const length: number = parseInt(message.slice(46));
-            const tag = await read<LevelChunkMetaDataDictionaryTag>(value.subarray(8),{ ...format, strict: false });
-            const key = value.subarray(0,8);
-            entries.push({ key, tag });
-            value = value.subarray(8 + length);
-          }
-        }
-      
-        return { count, entries } satisfies LevelChunkMetaDataDictionary;
-      }
-      case "~local_player": return read<LocalPlayer>(value,format);
-      case "mobevents": return read<MobEvents>(value,format);
-      case "Overworld": return read<Overworld>(value,format);
-      case "Nether": return read<Nether>(value,format);
-      case "TheEnd": return read<TheEnd>(value,format);
-      case "portals": return read<Portals>(value,format);
-      case "schedulerWT": return read<SchedulerWT>(value,format);
-      case "scoreboard": return read<Scoreboard>(value,format);
-      // default: return value;
-    }
+    return readWorldValue(key,value);
   } else {
-    switch (key.type){
-      // ChunkKey
-      case "Data3D": return value as Data3D;
-      case "Version": return value.readInt8() as Version;
-      case "Data2D": return value as Data2D;
-      case "Data2DLegacy": return value as Data2DLegacy;
-      case "SubChunkPrefix": return value.readInt8() as SubChunkPrefix;
-      case "LegacyTerrain": return value as LegacyTerrain;
-      case "BlockEntity": return readNBTList<BlockEntity>(value) as Promise<BlockEntities>;
-      case "Entity": return readNBTList<Entity>(value) as Promise<Entities>;
-      case "PendingTicks": return readNBTList<PendingTick>(value) as Promise<PendingTicks>;
-      case "LegacyBlockExtraData": return { entries: value.readInt32LE(), entriesKey: value.readInt32LE(4), value: value.readInt16LE(8) } as LegacyBlockExtraData;
-      case "BiomeState": return value as BiomeState;
-      case "FinalizedState": return value.readInt32LE() as FinalizedState;
-      case "ConversionData": return value as ConversionData;
-      case "BorderBlocks": return value as BorderBlocks;
-      case "HardcodedSpawners": return value as HardcodedSpawners;
-      case "RandomTicks": return readNBTList<RandomTick>(value) as Promise<RandomTicks>;
-      case "CheckSums": return value as CheckSums;
-      case "GenerationSeed": return value as GenerationSeed;
-      case "GeneratedPreCavesAndCliffsBlending": return Boolean(value.readInt8()) as GeneratedPreCavesAndCliffsBlending;
-      case "BlendingBiomeHeight": return value as BlendingBiomeHeight;
-      case "MetaDataHash": return value as MetaDataHash;
-      case "BlendingData": return value as BlendingData;
-      case "ActorDigestVersion": return value.readInt8() as ActorDigestVersion;
-      case "LegacyVersion": return value.readInt8() as LegacyVersion;
+    const chunkValue = await readChunkValue(key as ChunkKey,value);
+    if (chunkValue !== null) return chunkValue;
+    return readSuffixKeyValue(key as SuffixKey,value);
+  }
+}
 
-      // SuffixKey
-      case "actorprefix": return read<ActorPrefix>(value,format);
-      case "digp": return value as DigP;
-      case "posTrackDB": return read<PosTrackDB>(value,format);//.then(data => { console.log(key.key.toString("utf-8"),data); return data; });
-      case "player": return read<PlayerServerDef>(value,format);//.then(data => { console.log(key.key.toString("utf-8"),data); return data; });
-      case "player_server": return read<PlayerServer>(value,format);//.then(data => { console.log(key.key.toString("utf-8"),data); return data; });
-      case "VILLAGE_DWELLERS": return read<VillageDwellers>(value,format);
-      case "VILLAGE_INFO": return read<VillageInfo>(value,format);
-      case "VILLAGE_PLAYERS": return read<VillagePlayers>(value,format);
-      case "VILLAGE_POI": return read<VillagePois>(value,format);
-      case "map": return read<Map>(value,format);
-      case "tickingarea": return read<TickingArea>(value,format);
-      // default: return value;
-      default: throw { key, value, nbt: await read(value,format) };
+export async function readWorldValue<K extends keyof WorldKeyNameMap>(key: WorldKey, value: Buffer): Promise<WorldKeyNameMap[K]> {
+  switch (key){
+    case "AutonomousEntities": return read<AutonomousEntities>(value,format);
+    case "BiomeData": return read<BiomeData>(value,format);
+    case "dimension0": return read<LegacyDimension0>(value,format);//.then(data => { console.log(key,data.data); return data; });
+    case "dimension1": return read<LegacyDimension1>(value,format);//.then(data => { console.log(key,data.data); return data; });
+    case "mVillages": return read<LegacyMVillages>(value,format);//.then(data => { console.log(key,data.data); return data; });
+    case "game_flatworldlayers": return value as GameFlatWorldLayers;
+    case "PositionTrackDB-LastId": return read<PositionTrackDBLastId>(value,format);
+    case "LevelChunkMetaDataDictionary": {
+      // This "function" is a custom derivation of `readNBTList()`, because I needed to add in the handling for the `count` and `key` values. Eventually these shouldn't use duplicated logic.
+      const count = value.readUint32LE(0);
+      value = value.subarray(4);
+      const entries: LevelChunkMetaDataDictionaryEntry[] = [];
+
+      while (true){
+        if (value.byteLength === 0) break;
+        try {
+          const tag = await read<LevelChunkMetaDataDictionaryTag>(value.subarray(8),format);
+          const key = value.subarray(0,8); // Temporary string, I don't know how these should be read more accurately yet.
+          entries.push({ key, tag });
+          break;
+        } catch (error){
+          const message: string = (error as Error).message ?? `${error}`;
+          const length: number = parseInt(message.slice(46));
+          const tag = await read<LevelChunkMetaDataDictionaryTag>(value.subarray(8),{ ...format, strict: false });
+          const key = value.subarray(0,8);
+          entries.push({ key, tag });
+          value = value.subarray(8 + length);
+        }
+      }
+    
+      return { count, entries } satisfies LevelChunkMetaDataDictionary;
     }
+    case "~local_player": return read<LocalPlayer>(value,format);
+    case "mobevents": return read<MobEvents>(value,format);
+    case "Overworld": return read<Overworld>(value,format);
+    case "Nether": return read<Nether>(value,format);
+    case "TheEnd": return read<TheEnd>(value,format);
+    case "portals": return read<Portals>(value,format);
+    case "schedulerWT": return read<SchedulerWT>(value,format);
+    case "scoreboard": return read<Scoreboard>(value,format);
+    // default: return value;
+  }
+}
+
+export async function readChunkValue<K extends keyof ChunkKeyNameMap>(key: ChunkKey, value: Buffer): Promise<ChunkKeyNameMap[K] | null> {
+  switch (key.type){
+    // ChunkKey
+    case "Data3D": return value as Data3D;
+    case "Version": return value.readInt8() as Version;
+    case "Data2D": return value as Data2D;
+    case "Data2DLegacy": return value as Data2DLegacy;
+    case "SubChunkPrefix": return value.readInt8() as SubChunkPrefix;
+    case "LegacyTerrain": return value as LegacyTerrain;
+    case "BlockEntity": return readNBTList<BlockEntity>(value) as Promise<BlockEntities>;
+    case "Entity": return readNBTList<Entity>(value) as Promise<Entities>;
+    case "PendingTicks": return readNBTList<PendingTick>(value) as Promise<PendingTicks>;
+    case "LegacyBlockExtraData": return { entries: value.readInt32LE(), entriesKey: value.readInt32LE(4), value: value.readInt16LE(8) } as LegacyBlockExtraData;
+    case "BiomeState": return value as BiomeState;
+    case "FinalizedState": return value.readInt32LE() as FinalizedState;
+    case "ConversionData": return value as ConversionData;
+    case "BorderBlocks": return value as BorderBlocks;
+    case "HardcodedSpawners": return value as HardcodedSpawners;
+    case "RandomTicks": return readNBTList<RandomTick>(value) as Promise<RandomTicks>;
+    case "CheckSums": return value as CheckSums;
+    case "GenerationSeed": return value as GenerationSeed;
+    case "GeneratedPreCavesAndCliffsBlending": return Boolean(value.readInt8()) as GeneratedPreCavesAndCliffsBlending;
+    case "BlendingBiomeHeight": return value as BlendingBiomeHeight;
+    case "MetaDataHash": return value as MetaDataHash;
+    case "BlendingData": return value as BlendingData;
+    case "ActorDigestVersion": return value.readInt8() as ActorDigestVersion;
+    case "LegacyVersion": return value.readInt8() as LegacyVersion;
+    default: return null;
+  }
+}
+
+export async function readSuffixKeyValue<K extends keyof SuffixKeyNameMap>(key: SuffixKey, value: Buffer): Promise<SuffixKeyNameMap[K]> {
+  switch (key.type){
+    // SuffixKey
+    case "actorprefix": return read<ActorPrefix>(value,format);
+    case "digp": return value as DigP;
+    case "posTrackDB": return read<PosTrackDB>(value,format);//.then(data => { console.log(key.key.toString("utf-8"),data); return data; });
+    case "player": return read<PlayerServerDef>(value,format);//.then(data => { console.log(key.key.toString("utf-8"),data); return data; });
+    case "player_server": return read<PlayerServer>(value,format);//.then(data => { console.log(key.key.toString("utf-8"),data); return data; });
+    case "VILLAGE_DWELLERS": return read<VillageDwellers>(value,format);
+    case "VILLAGE_INFO": return read<VillageInfo>(value,format);
+    case "VILLAGE_PLAYERS": return read<VillagePlayers>(value,format);
+    case "VILLAGE_POI": return read<VillagePois>(value,format);
+    case "map": return read<Map>(value,format);
+    case "tickingarea": return read<TickingArea>(value,format);
+    // default: return value;
+    default: throw { key, value, nbt: await read(value,format) };
   }
 }
 
