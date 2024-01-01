@@ -30,50 +30,66 @@ export function readKey(key: Buffer): Key {
   return chunkKey;
 }
 
-export function readSuffixKey<K extends keyof SuffixKeyNameMap>(key: Buffer): SuffixKeyNameMap[K] | null {
+export function readSuffixKey<K extends keyof SuffixKeyNameMap>(key: Buffer): SuffixKeyEntry<K> | null {
   const keyString: string = key.toString("utf-8");
   let keyType: keyof SuffixKeyNameMap | null;
 
   switch (true){
-    case actorprefix.test(keyString): keyType = SUFFIX_KEY.actorprefix; break;
-    case digp.test(keyString): keyType = SUFFIX_KEY.digp; break;
-    case posTrackDB.test(keyString): keyType = SUFFIX_KEY.posTrackDB; break;
-    case player.test(keyString): keyType = SUFFIX_KEY.player; break;
-    case player_server.test(keyString): keyType = SUFFIX_KEY.player_server; break;
-    case tickingarea.test(keyString): keyType = SUFFIX_KEY.tickingarea; break;
-    case village_dwellers.test(keyString): keyType = SUFFIX_KEY.VILLAGE_DWELLERS; break;
-    case village_info.test(keyString): keyType = SUFFIX_KEY.VILLAGE_INFO; break;
-    case village_players.test(keyString): keyType = SUFFIX_KEY.VILLAGE_PLAYERS; break;
-    case village_poi.test(keyString): keyType = SUFFIX_KEY.VILLAGE_POI; break;
-    case map.test(keyString): keyType = SUFFIX_KEY.map; break;
+    case actorprefix.test(keyString): keyType = "actorprefix"; break;
+    case digp.test(keyString): keyType = "digp"; break;
+    case posTrackDB.test(keyString): keyType = "posTrackDB"; break;
+    case player.test(keyString): keyType = "player"; break;
+    case player_server.test(keyString): keyType = "player_server"; break;
+    case tickingarea.test(keyString): keyType = "tickingarea"; break;
+    case village_dwellers.test(keyString): keyType = "VILLAGE_DWELLERS"; break;
+    case village_info.test(keyString): keyType = "VILLAGE_INFO"; break;
+    case village_players.test(keyString): keyType = "VILLAGE_PLAYERS"; break;
+    case village_poi.test(keyString): keyType = "VILLAGE_POI"; break;
+    case map.test(keyString): keyType = "map"; break;
     default: keyType = null; break;
   }
 
   switch (keyType){
-    case SUFFIX_KEY.actorprefix: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
-    case SUFFIX_KEY.digp: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
-    case SUFFIX_KEY.posTrackDB: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
-    case SUFFIX_KEY.player: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
-    case SUFFIX_KEY.player_server: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
-    case SUFFIX_KEY.tickingarea: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
-    case SUFFIX_KEY.VILLAGE_DWELLERS: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
-    case SUFFIX_KEY.VILLAGE_INFO: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
-    case SUFFIX_KEY.VILLAGE_PLAYERS: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
-    case SUFFIX_KEY.VILLAGE_POI: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
-    case SUFFIX_KEY.map: return { type: keyType, key } satisfies SuffixKey<typeof keyType>;
+    case "actorprefix": return { type: keyType as K, key };
+    case "digp": return { type: keyType as K, key };
+    case "posTrackDB": return { type: keyType as K, key };
+    case "player": return { type: keyType as K, key };
+    case "player_server": return { type: keyType as K, key };
+    case "tickingarea": return { type: keyType as K, key };
+    case "VILLAGE_DWELLERS": return { type: keyType as K, key };
+    case "VILLAGE_INFO": return { type: keyType as K, key };
+    case "VILLAGE_PLAYERS": return { type: keyType as K, key };
+    case "VILLAGE_POI": return { type: keyType as K, key };
+    case "map": return { type: keyType as K, key };
     default: return null;
   }
 }
 
-export function readWorldKey<K extends keyof WorldKeyNameMap>(key: Buffer): WorldKeyNameMap[K] | null {
+export function readWorldKey<K extends keyof WorldKeyNameMap>(key: Buffer): K | null {
   const stringy: string = key.toString("utf-8");
-  if (stringy in WORLD_KEY){
-    return stringy as WorldKey;
+  switch (stringy as K){
+    case "AutonomousEntities":
+    case "BiomeData":
+    case "LevelChunkMetaDataDictionary":
+    case "Nether":
+    case "Overworld":
+    case "TheEnd":
+    case "dimension0":
+    case "dimension1":
+    case "game_flatworldlayers":
+    case "mVillages":
+    case "mobevents":
+    case "portals":
+    case "schedulerWT":
+    case "scoreboard":
+    case "~local_player":
+      return stringy as K;
+    default:
+      return null;
   }
-  return null;
 }
 
-export function readChunkKey<K extends keyof ChunkKeyNameMap>(key: Buffer): ChunkKeyNameMap[K] | null {
+export function readChunkKey<K extends keyof ChunkKeyNameMap>(key: Buffer): ChunkKeyEntry<K> | null {
   const view = new DataView(key.buffer,key.byteOffset,key.byteLength);
 
   const x = view.getInt32(0,true);
@@ -83,7 +99,7 @@ export function readChunkKey<K extends keyof ChunkKeyNameMap>(key: Buffer): Chun
   // console.log(CHUNK_KEY[type]);
   // console.log(Dimension[dimension],"\n");
 
-  return { x, y, dimension, type: CHUNK_KEY[type]! as ChunkKey["type"] } satisfies ChunkKey;
+  return { x, y, dimension, type: CHUNK_KEY[type]! as K } satisfies ChunkKeyEntry<K>;
 }
 
 export async function readValue(key: Key, value: Buffer): Promise<Value> {
@@ -96,7 +112,7 @@ export async function readValue(key: Key, value: Buffer): Promise<Value> {
   }
 }
 
-export async function readWorldValue<K extends keyof WorldKeyNameMap>(key: WorldKey, value: Buffer): Promise<WorldKeyNameMap[K]> {
+export async function readWorldValue<K extends keyof WorldKeyNameMap>(key: K, value: Buffer): Promise<WorldKeyNameMap[K]> {
   switch (key){
     case "AutonomousEntities": return read<AutonomousEntities>(value,format);
     case "BiomeData": return read<BiomeData>(value,format);
@@ -225,25 +241,6 @@ export type Key = WorldKey | SuffixKey | ChunkKey;
 
 export type WorldKey<K extends keyof WorldKeyNameMap = keyof WorldKeyNameMap> = WorldKeyNameMap[K];
 
-export enum WORLD_KEY {
-  BiomeData = "BiomeData",
-  dimension0 = "dimension0",
-  dimension1 = "dimension1",
-  mVillages = "mVillages",
-  LevelChunkMetaDataDictionary = "LevelChunkMetaDataDictionary",
-  game_flatworldlayers = "game_flatworldlayers",
-  "~local_player" = "~local_player",
-  AutonomousEntities = "AutonomousEntities",
-  "PositionTrackDB-LastId" = "PositionTrackDB-LastId",
-  Overworld = "Overworld",
-  Nether = "Nether",
-  TheEnd = "TheEnd",
-  mobevents = "mobevents",
-  portals = "portals",
-  schedulerWT = "schedulerWT",
-  scoreboard = "scoreboard"
-}
-
 export interface WorldKeyNameMap {
   BiomeData: NBTData<BiomeData>;
   dimension0: NBTData<LegacyDimension0>;
@@ -266,22 +263,8 @@ export type SuffixKey<K extends keyof SuffixKeyNameMap = keyof SuffixKeyNameMap>
 
 export interface SuffixKeyEntry<K extends keyof SuffixKeyNameMap = keyof SuffixKeyNameMap> {
   type: K;
-  value: SuffixKeyNameMap[K];
+  // value: SuffixKeyNameMap[K];
   key: Buffer;
-}
-
-export enum SUFFIX_KEY {
-  actorprefix = "actorprefix",
-  digp = "digp",
-  posTrackDB = "posTrackDB",
-  player = "player",
-  player_server = "player_server",
-  tickingarea = "tickingarea",
-  VILLAGE_DWELLERS = "VILLAGE_DWELLERS",
-  VILLAGE_INFO = "VILLAGE_INFO",
-  VILLAGE_PLAYERS = "VILLAGE_PLAYERS",
-  VILLAGE_POI = "VILLAGE_POI",
-  map = "map"
 }
 
 export interface SuffixKeyNameMap {
@@ -315,9 +298,9 @@ export type ChunkKey<K extends keyof ChunkKeyNameMap = keyof ChunkKeyNameMap> = 
 export interface ChunkKeyEntry<K extends keyof ChunkKeyNameMap = keyof ChunkKeyNameMap> {
   x: number;
   y: number;
-  type: keyof typeof CHUNK_KEY;
+  type: K;
   dimension: Dimension;
-  value: ChunkKeyNameMap[K];
+  // value: ChunkKeyNameMap[K];
 }
 
 export enum CHUNK_KEY {
