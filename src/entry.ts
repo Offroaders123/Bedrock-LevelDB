@@ -68,8 +68,8 @@ export function readSuffixKey<K extends keyof SuffixKeyNameMap>(key: Buffer): Su
 }
 
 export function readWorldKey<K extends keyof WorldKeyNameMap>(key: Buffer): WorldKey<K> | null {
-  const stringy: string = key.toString("utf-8");
-  switch (stringy as K){
+  const stringy = key.toString("utf-8") as K;
+  switch (stringy){
     case "AutonomousEntities":
     case "BiomeData":
     case "LevelChunkMetaDataDictionary":
@@ -85,7 +85,7 @@ export function readWorldKey<K extends keyof WorldKeyNameMap>(key: Buffer): Worl
     case "schedulerWT":
     case "scoreboard":
     case "~local_player":
-      return stringy as K;
+      return stringy;
     default:
       return null;
   }
@@ -243,7 +243,7 @@ export const format: Required<ReadOptions> = {
 
 export type Key = WorldKey | SuffixKeyEntry | ChunkKeyEntry;
 
-export type WorldKey<K extends keyof WorldKeyNameMap = keyof WorldKeyNameMap> = WorldKeyNameMap[K];
+export type WorldKey<K extends keyof WorldKeyNameMap = keyof WorldKeyNameMap> = K;
 
 export interface WorldKeyNameMap {
   BiomeData: NBTData<BiomeData>;
