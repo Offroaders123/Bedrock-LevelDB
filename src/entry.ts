@@ -380,7 +380,7 @@ export type Value = WorldValue | SuffixValue | ChunkValue;
 // WorldKey
 
 export interface AutonomousEntities {
-  AutonomousEntityList: unknown[];
+  AutonomousEntityList: object[];
 }
 
 export interface BiomeData {
@@ -428,7 +428,7 @@ export interface DimensionHeightRange {
 }
 
 export interface LocalPlayer {
-  [name: string]: never; // from Region-Types
+  // [name: string]: never; // from Region-Types
 }
 
 export interface MobEvents {
@@ -439,7 +439,7 @@ export interface MobEvents {
 }
 
 export interface Overworld {
-  [name: string]: never; // untyped atm
+  // [name: string]: never; // untyped atm
 }
 
 export interface SchedulerWT {
@@ -449,7 +449,7 @@ export interface SchedulerWT {
 }
 
 export interface Scoreboard {
-  Criteria: unknown[];
+  Criteria: object[];
   DisplayObjectives: ScoreboardDisplayObjective[];
   Entries: ScoreboardEntry[];
   Objectives: ScoreboardObjective[];
@@ -497,19 +497,19 @@ export type LegacyTerrain = Buffer;
 export type BlockEntities = NBTData<BlockEntity>[];
 
 export interface BlockEntity {
-  [name: string]: never; // declared from Region-Types
+  // [name: string]: never; // declared from Region-Types
 }
 
 export type Entities = NBTData<Entity>[];
 
 export interface Entity {
-  [name: string]: never; // declared from Region-Types
+  // [name: string]: never; // declared from Region-Types
 }
 
 export type PendingTicks = NBTData<PendingTick>[];
 
 export interface PendingTick {
-  [name: string]: never; // untyped atm
+  // [name: string]: never; // untyped atm
 }
 
 export interface LegacyBlockExtraData {
@@ -527,7 +527,7 @@ export type HardcodedSpawners = Buffer; // NBT?
 export type RandomTicks = NBTData<RandomTick>[];
 
 export interface RandomTick {
-  [name: string]: never; // untyped atm
+  // [name: string]: never; // untyped atm
 }
 
 export type CheckSums = Buffer;
@@ -542,7 +542,7 @@ export type LegacyVersion = number;
 // SuffixKey
 
 export interface ActorPrefix {
-  [name: string]: never; // untyped atm
+  // [name: string]: never; // untyped atm
 }
 
 export type DigP = Buffer;
@@ -586,7 +586,7 @@ export interface VillageInfo {
 }
 
 export interface VillagePlayers {
-  Players: unknown[]; // maybe `Player[]`, but I nor the wiki know for sure
+  Players: object[]; // maybe `Player[]`, but I nor the wiki know for sure
 }
 
 export interface VillagePois {
@@ -616,7 +616,7 @@ export interface VillagePoiInstance {
 
 export interface Map {
   colors: ByteArrayTag;
-  decorations: unknown[];
+  decorations: object[];
   dimension: ByteTag<Dimension>;
   fullyExplored: BooleanTag;
   height: ShortTag;
@@ -650,14 +650,14 @@ export interface PortalRecord {
 
 export interface Nether {
   data: {
-    LimboEntities: unknown[]; // `Entity[]`?
+    LimboEntities: object[]; // `Entity[]`?
   };
 }
 
 export interface TheEnd {
   data: {
     DragonFight: DragonFight;
-    LimboEntities: unknown[];
+    LimboEntities: object[];
   };
 }
 
@@ -705,7 +705,7 @@ export interface PlayerServerDef {
 }
 
 export interface PlayerServer {
-  [name: string]: unknown; // `Player` I'm pretty sure essentially, there might be more keys for server players than the plain `LocalPlayer` though.
+  // [name: string]: unknown; // `Player` I'm pretty sure essentially, there might be more keys for server players than the plain `LocalPlayer` though.
 }
 
 export interface LegacyDimension0 {
@@ -773,6 +773,6 @@ export interface StructureChildren {
 export interface LegacyMVillages {
   data: {
     Tick: IntTag;
-    Villages: unknown[];
+    Villages: object[];
   };
 }
