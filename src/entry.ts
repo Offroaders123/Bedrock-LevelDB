@@ -27,7 +27,9 @@ export function readKey(key: Buffer): Key {
   // console.log(key)//,stringy);
 
   const chunkKey = readChunkKey(key);
-  return chunkKey;
+  if (chunkKey !== null) return chunkKey;
+
+  throw new Error(`Encountered unknown key type, '${key.toString("utf-8")}'.`);
 }
 
 export function readSuffixKey<K extends keyof SuffixKeyNameMap>(key: Buffer): SuffixKeyEntry<K> | null {
@@ -65,7 +67,7 @@ export function readSuffixKey<K extends keyof SuffixKeyNameMap>(key: Buffer): Su
   }
 }
 
-export function readWorldKey<K extends keyof WorldKeyNameMap>(key: Buffer): K | null {
+export function readWorldKey<K extends keyof WorldKeyNameMap>(key: Buffer): WorldKey<K> | null {
   const stringy: string = key.toString("utf-8");
   switch (stringy as K){
     case "AutonomousEntities":
@@ -98,6 +100,8 @@ export function readChunkKey<K extends keyof ChunkKeyNameMap>(key: Buffer): Chun
   const type = view.getUint8(dimension === Dimension.overworld ? 8 : 12);
   // console.log(CHUNK_KEY[type]);
   // console.log(Dimension[dimension],"\n");
+
+  if (CHUNK_KEY[type] === undefined) return null;
 
   return { x, y, dimension, type: CHUNK_KEY[type]! as K } satisfies ChunkKeyEntry<K>;
 }
@@ -237,7 +241,7 @@ export const format: Required<ReadOptions> = {
   strict: true
 };
 
-export type Key = WorldKey | SuffixKey | ChunkKey;
+export type Key = WorldKey | SuffixKeyEntry | ChunkKeyEntry;
 
 export type WorldKey<K extends keyof WorldKeyNameMap = keyof WorldKeyNameMap> = WorldKeyNameMap[K];
 
