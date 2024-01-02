@@ -108,12 +108,18 @@ export function readChunkKey<K extends keyof ChunkKeyNameMap>(key: Buffer): Chun
 
 export async function readValue(key: Key, value: Buffer): Promise<Value> {
   if (typeof key === "string"){
-    return readWorldValue(key,value);
-  } else {
-    const chunkValue = await readChunkValue(key as ChunkKey,value);
-    if (chunkValue !== null) return chunkValue;
-    return readSuffixKeyValue(key as SuffixKey,value);
+    const worldValue = await readWorldValue(key,value);
+    if (worldValue !== null) return worldValue;
   }
+
+  const chunkValue = await readChunkValue(key as ChunkKey,value);
+  if (chunkValue !== null) return chunkValue;
+
+  const suffixValue = await readSuffixKeyValue(key as SuffixKey,value);
+  if (suffixValue !== null) return suffixValue;
+
+  console.error("Encountered unknown key-value type");
+  throw { key, value, nbt: await read(value,format) };
 }
 
 export async function readWorldValue<K extends keyof WorldKeyNameMap>(key: K, value: Buffer): Promise<WorldValue<K> | null> {
@@ -194,7 +200,7 @@ export async function readChunkValue<K extends keyof ChunkKeyNameMap>(key: Chunk
   }
 }
 
-export async function readSuffixKeyValue<K extends keyof SuffixKeyNameMap>(key: SuffixKey, value: Buffer): Promise<SuffixValue<K>> {
+export async function readSuffixKeyValue<K extends keyof SuffixKeyNameMap>(key: SuffixKey, value: Buffer): Promise<SuffixValue<K> | null> {
   switch (key.type){
     // SuffixKey
     case "actorprefix": return read<ActorPrefix>(value,format);
@@ -209,7 +215,8 @@ export async function readSuffixKeyValue<K extends keyof SuffixKeyNameMap>(key: 
     case "map": return read<Map>(value,format);
     case "tickingarea": return read<TickingArea>(value,format);
     // default: return value;
-    default: throw { key, value, nbt: await read(value,format) };
+    // default: throw { key, value, nbt: await read(value,format) };
+    default: return null;
   }
 }
 
