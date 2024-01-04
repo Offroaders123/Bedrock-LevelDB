@@ -26,6 +26,7 @@ export type Entries = {
 export type Chunk = {
   x: number;
   y: number;
+  subchunks: Buffer[];
 } & {
   [K in ChunkKey["type"]]?: Value;
 }
@@ -64,14 +65,19 @@ export async function readDatabase(path: string): Promise<Entries> {
       continue;
     }
 
-    const { x, y, type, dimension } = key;
+    const { x, y, type, dimension, subchunk } = key;
     let chunk: Chunk | undefined = entries[Dimension[dimension] as keyof typeof Dimension].find(entry => entry.x === x && entry.y === y);
 
     if (chunk === undefined){
-      chunk = { x, y };
+      chunk = { x, y, subchunks: [] };
       entries[Dimension[dimension] as keyof typeof Dimension].push(chunk);
     }
 
+    if (type === "SubChunkPrefix"){
+      chunk.subchunks[subchunk!] = value as Buffer;
+      continue;
+    }
+    
     chunk[type] = value;
   }
 

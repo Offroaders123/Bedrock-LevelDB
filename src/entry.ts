@@ -100,11 +100,11 @@ export function readChunkKey<K extends keyof ChunkKeyNameMap>(key: Buffer): Chun
   const type = view.getUint8(dimension === Dimension.overworld ? 8 : 12);
   const subchunk: number | null = type === CHUNK_KEY.SubChunkPrefix ? view.getInt8(dimension === Dimension.overworld ? 9 : 13) : null;
 
-  if (type === CHUNK_KEY.SubChunkPrefix){
-    console.log(key);
-    console.log(CHUNK_KEY[type],subchunk);
-    console.log(Dimension[dimension],"\n");
-  }
+  // if (type === CHUNK_KEY.SubChunkPrefix){
+  //   console.log(key);
+  //   console.log(CHUNK_KEY[type],subchunk);
+  //   console.log(Dimension[dimension],"\n");
+  // }
 
   if (CHUNK_KEY[type] === undefined) return null;
 
@@ -181,7 +181,7 @@ export async function readChunkValue<K extends keyof ChunkKeyNameMap>(key: Chunk
     case "Version": return value.readInt8() as Version;
     case "Data2D": return value as Data2D;
     case "Data2DLegacy": return value as Data2DLegacy;
-    case "SubChunkPrefix": return value.readInt8() as SubChunkPrefix;
+    case "SubChunkPrefix": return value as SubChunkPrefix;
     case "LegacyTerrain": return value as LegacyTerrain;
     case "BlockEntity": return readNBTList<BlockEntity>(value) as Promise<BlockEntities>;
     case "Entity": return readNBTList<Entity>(value) as Promise<Entities>;
@@ -497,7 +497,7 @@ export type Data3D = Buffer;
 export type Version = number;
 export type Data2D = Buffer;
 export type Data2DLegacy = Buffer;
-export type SubChunkPrefix = number;
+export type SubChunkPrefix = Buffer;
 export type LegacyTerrain = Buffer;
 
 export type BlockEntities = NBTData<BlockEntity>[];
