@@ -247,7 +247,7 @@ export async function readNBTList<T extends RootTagLike>(data: Uint8Array): Prom
 }
 
 export const format: Required<ReadOptions> = {
-  name: true,
+  rootName: true,
   endian: "little",
   compression: null,
   bedrockLevel: false,
