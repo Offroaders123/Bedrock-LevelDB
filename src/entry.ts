@@ -96,14 +96,19 @@ export function readChunkKey<K extends keyof ChunkKeyNameMap>(key: Buffer): Chun
 
   const x = view.getInt32(0,true);
   const y = view.getInt32(4,true);
-  let dimension: Dimension = key.byteLength < 12 ? Dimension.overworld : view.getInt32(8,true);
+  const dimension: Dimension = key.byteLength < 12 ? Dimension.overworld : view.getInt32(8,true);
   const type = view.getUint8(dimension === Dimension.overworld ? 8 : 12);
-  // console.log(CHUNK_KEY[type]);
-  // console.log(Dimension[dimension],"\n");
+  const subchunk: number | null = type === CHUNK_KEY.SubChunkPrefix ? view.getInt8(dimension === Dimension.overworld ? 9 : 13) : null;
+
+  if (type === CHUNK_KEY.SubChunkPrefix){
+    console.log(key);
+    console.log(CHUNK_KEY[type],subchunk);
+    console.log(Dimension[dimension],"\n");
+  }
 
   if (CHUNK_KEY[type] === undefined) return null;
 
-  return { x, y, dimension, type: CHUNK_KEY[type]! as K } satisfies ChunkKeyEntry<K>;
+  return { x, y, dimension, type: CHUNK_KEY[type]! as K, subchunk } satisfies ChunkKeyEntry<K>;
 }
 
 export async function readValue(key: Key, value: Buffer): Promise<Value> {
@@ -316,6 +321,7 @@ export interface ChunkKeyEntry<K extends keyof ChunkKeyNameMap = keyof ChunkKeyN
   y: number;
   type: K;
   dimension: Dimension;
+  subchunk: number | null;
   // value: ChunkKeyNameMap[K];
 }
 
