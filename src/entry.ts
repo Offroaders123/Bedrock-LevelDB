@@ -1,4 +1,4 @@
-import { read } from "nbtify";
+import { NBTError, read } from "nbtify";
 
 import type { NBTData, ReadOptions, ByteTag, BooleanTag, IntTag, LongTag, FloatTag, StringTag, RootTagLike, ByteArrayTag, ShortTag, IntArrayTag } from "nbtify";
 
@@ -235,9 +235,11 @@ export async function readNBTList<T extends RootTagLike>(data: Uint8Array): Prom
       entries.push(entry);
       break;
     } catch (error){
-      const message: string = (error as Error).message ?? `${error}`;
-      const length: number = parseInt(message.slice(46));
-      const entry: NBTData<T> = await read<T>(data,{ ...format, strict: false });
+      if (!(error instanceof NBTError)){
+        throw error;
+      }
+      const length: number = error.byteOffset;
+      const entry: NBTData<T> = error.cause as NBTData<T>;
       entries.push(entry);
       data = data.subarray(length);
     }

@@ -1,0 +1,3 @@
+[submodule "NBTify"]
+	path = NBTify
+	url = https://github.com/Offroaders123/NBTify.git
