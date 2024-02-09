@@ -1,4 +1,5 @@
 import { NBTError, read } from "nbtify";
+import { BlockEntity, Entity, Player } from "../Region-Types/src/bedrock/index.js";
 
 import type { NBTData, ReadOptions, ByteTag, BooleanTag, IntTag, LongTag, FloatTag, StringTag, RootTagLike, ByteArrayTag, ShortTag, IntArrayTag } from "nbtify";
 
@@ -364,8 +365,8 @@ export interface ChunkKeyNameMap {
   Data2DLegacy: Data2DLegacy;
   SubChunkPrefix: SubChunkPrefix;
   LegacyTerrain: LegacyTerrain;
-  BlockEntity: BlockEntity;
-  Entity: Entity;
+  BlockEntity: BlockEntities;
+  Entity: Entities;
   PendingTicks: PendingTicks;
   LegacyBlockExtraData: LegacyBlockExtraData;
   BiomeState: BiomeState;
@@ -389,7 +390,7 @@ export type Value = WorldValue | SuffixValue | ChunkValue;
 // WorldKey
 
 export interface AutonomousEntities {
-  AutonomousEntityList: object[];
+  AutonomousEntityList: Entity[]; // approximated, guessing this is entity. I've only ever seen it empty
 }
 
 export interface BiomeData {
@@ -436,9 +437,7 @@ export interface DimensionHeightRange {
   min: ShortTag;
 }
 
-export interface LocalPlayer {
-  // [name: string]: never; // from Region-Types
-}
+export type LocalPlayer = Player;
 
 export interface MobEvents {
   events_enabled: BooleanTag;
@@ -505,15 +504,7 @@ export type LegacyTerrain = Buffer;
 
 export type BlockEntities = NBTData<BlockEntity>[];
 
-export interface BlockEntity {
-  // [name: string]: never; // declared from Region-Types
-}
-
 export type Entities = NBTData<Entity>[];
-
-export interface Entity {
-  // [name: string]: never; // declared from Region-Types
-}
 
 export type PendingTicks = NBTData<PendingTick>[];
 
@@ -595,7 +586,7 @@ export interface VillageInfo {
 }
 
 export interface VillagePlayers {
-  Players: object[]; // maybe `Player[]`, but I nor the wiki know for sure
+  Players: Player[]; // approximated, maybe `Player[]`, but I nor the wiki know for sure
 }
 
 export interface VillagePois {
@@ -659,14 +650,14 @@ export interface PortalRecord {
 
 export interface Nether {
   data: {
-    LimboEntities: object[]; // `Entity[]`?
+    LimboEntities: Entity[]; // `Entity[]`? approximated, only ever seen empty
   };
 }
 
 export interface TheEnd {
   data: {
     DragonFight: DragonFight;
-    LimboEntities: object[];
+    LimboEntities: Entity[]; // approximated
   };
 }
 
@@ -713,9 +704,8 @@ export interface PlayerServerDef {
   ServerId: StringTag;
 }
 
-export interface PlayerServer {
-  // [name: string]: unknown; // `Player` I'm pretty sure essentially, there might be more keys for server players than the plain `LocalPlayer` though.
-}
+// `Player` I'm pretty sure essentially, there might be more keys for server players than the plain `LocalPlayer` though.
+export type PlayerServer = Player;
 
 export interface LegacyDimension0 {
   mansion: {
