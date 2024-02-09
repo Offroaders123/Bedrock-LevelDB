@@ -11,6 +11,9 @@ export async function readEntry(entry: [Buffer, Buffer]): Promise<Entry> {
   return [key,value];
 }
 
+// Note: this seems to be different than the NBT ID type for Dimensions. I don't think these can be the same definition.
+// The database uses different IDs from the values the NBT uses. The one from Region-Types isn't interchangeable.
+// edit: maybe those are just wrong altogether then, and maybe this is the only one for Bedrock?
 export enum Dimension {
   overworld = 0,
   nether,
@@ -639,7 +642,7 @@ export interface Portals {
 }
 
 export interface PortalRecord {
-  DimId: IntTag;
+  DimId: IntTag<Dimension>;
   Span: ByteTag;
   TpX: IntTag;
   TpY: IntTag;

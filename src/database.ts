@@ -1,7 +1,7 @@
 import { LevelDB } from "leveldb-zlib";
 import { readEntry, Dimension, readKey } from "./entry.js";
 
-import type { WorldKey, SuffixKey, ChunkKey, Value } from "./entry.js";
+import type { ChunkKeyNameMap, WorldKeyNameMap, SuffixKeyNameMap } from "./entry.js";
 
 declare module "leveldb-zlib" {
   // @ts-ignore
@@ -20,7 +20,9 @@ export type Entries = {
   nether: Chunk[];
   end: Chunk[];
 } & {
-  [K in WorldKey | `${SuffixKey["type"]}${string}`]?: Value;
+  [K in keyof WorldKeyNameMap]?: WorldKeyNameMap[K];
+} & {
+  [K in keyof SuffixKeyNameMap as `${K}${string}`]?: SuffixKeyNameMap[K];
 }
 
 export type Chunk = {
@@ -28,9 +30,10 @@ export type Chunk = {
   y: number;
   subchunks: Buffer[];
 } & {
-  [K in ChunkKey["type"]]?: Value;
+  [K in keyof ChunkKeyNameMap]?: ChunkKeyNameMap[K];
 }
 
+// not sure about the indexing here yet, still messy with these fancy types now
 export async function readDatabase(path: string): Promise<Entries> {
   const db = new LevelDB(path,{ createIfMissing: false });
   await db.open();
@@ -53,7 +56,7 @@ export async function readDatabase(path: string): Promise<Entries> {
     const [key, value] = result;
 
     if (typeof key !== "object"){
-      entries[key] = value;
+      entries[key] = value as any;
       // console.log(key,value);
       continue;
     }
@@ -61,7 +64,7 @@ export async function readDatabase(path: string): Promise<Entries> {
     // continue;
 
     if (!("x" in key) || !("y" in key)){
-      entries[key.key.toString() as `${SuffixKey["type"]}${string}`] = value;
+      entries[key.key.toString() as `${keyof SuffixKeyNameMap}${string}`] = value as any;
       continue;
     }
 
@@ -78,7 +81,7 @@ export async function readDatabase(path: string): Promise<Entries> {
       continue;
     }
     
-    chunk[type] = value;
+    chunk[type] = value as any;
   }
 
   await db.close();
