@@ -51,6 +51,10 @@ export function readSuffixKey<K extends keyof SuffixKeyNameMap>(key: Buffer): Su
     case village_info.test(keyString): keyType = "VILLAGE_INFO" as K; break;
     case village_players.test(keyString): keyType = "VILLAGE_PLAYERS" as K; break;
     case village_poi.test(keyString): keyType = "VILLAGE_POI" as K; break;
+    case village_dwellers_overworld.test(keyString): keyType = "VILLAGE_DWELLERS" as K; break;
+    case village_info_overworld.test(keyString): keyType = "VILLAGE_INFO" as K; break;
+    case village_players_overworld.test(keyString): keyType = "VILLAGE_PLAYERS" as K; break;
+    case village_poi_overworld.test(keyString): keyType = "VILLAGE_POI" as K; break;
     case map.test(keyString): keyType = "map" as K; break;
     default: keyType = null; break;
   }
@@ -319,6 +323,11 @@ export const village_dwellers = /VILLAGE_[0-9a-f\\-]+_DWELLERS/;
 export const village_info = /VILLAGE_[0-9a-f\\-]+_INFO/;
 export const village_players = /VILLAGE_[0-9a-f\\-]+_PLAYERS/;
 export const village_poi = /VILLAGE_[0-9a-f\\-]+_POI/;
+// needs more debugging; I opened the world with v1.20.51.01
+const village_dwellers_overworld = /VILLAGE_Overworld_[0-9a-f\\-]+_DWELLERS/;
+const village_info_overworld = /VILLAGE_Overworld_[0-9a-f\\-]+_INFO/;
+const village_players_overworld = /VILLAGE_Overworld_[0-9a-f\\-]+_PLAYERS/;
+const village_poi_overworld = /VILLAGE_Overworld_[0-9a-f\\-]+_POI/;
 export const map = /map_\-[0-9]+/;
 
 export type ChunkKey<K extends keyof ChunkKeyNameMap = keyof ChunkKeyNameMap> = ChunkKeyEntry<K>;
