@@ -1,5 +1,5 @@
 import { LevelDB } from "leveldb-zlib";
-import { readEntry, Dimension, readKey } from "./entry.js";
+import { readEntry, DimensionID } from "./entry.js";
 
 import type { ChunkKeyNameMap, WorldKeyNameMap, SuffixKeyNameMap } from "./entry.js";
 
@@ -45,7 +45,7 @@ export async function readDatabase(path: string): Promise<Entries> {
   };
 
   // for await (const [keyBuffer] of db.getIterator({ keys: true, values: false })){
-  //   const key = readKey(keyBuffer);
+  //   const key = (await import("./entry.js")).readKey(keyBuffer);
   //   console.log(key);
   // }
 
@@ -69,11 +69,11 @@ export async function readDatabase(path: string): Promise<Entries> {
     }
 
     const { x, y, type, dimension, subchunk } = key;
-    let chunk: Chunk | undefined = entries[Dimension[dimension] as keyof typeof Dimension].find(entry => entry.x === x && entry.y === y);
+    let chunk: Chunk | undefined = entries[DimensionID[dimension] as keyof typeof DimensionID].find(entry => entry.x === x && entry.y === y);
 
     if (chunk === undefined){
       chunk = { x, y, subchunks: [] };
-      entries[Dimension[dimension] as keyof typeof Dimension].push(chunk);
+      entries[DimensionID[dimension] as keyof typeof DimensionID].push(chunk);
     }
 
     if (type === "SubChunkPrefix"){

@@ -1,7 +1,9 @@
 import { NBTError, read } from "nbtify";
-import { BlockEntity, Entity, Player } from "../Region-Types/src/bedrock/index.js";
+import { BlockEntity, DimensionID, Entity, Player } from "../Region-Types/src/bedrock/index.js";
 
 import type { NBTData, ReadOptions, ByteTag, BooleanTag, IntTag, LongTag, FloatTag, StringTag, RootTagLike, ByteArrayTag, ShortTag, IntArrayTag } from "nbtify";
+
+export { DimensionID };
 
 export type Entry = [Key, Value];
 
@@ -9,15 +11,6 @@ export async function readEntry(entry: [Buffer, Buffer]): Promise<Entry> {
   const key: Key = readKey(entry[0]);
   const value: Value = await readValue(key,entry[1]);
   return [key,value];
-}
-
-// Note: this seems to be different than the NBT ID type for Dimensions. I don't think these can be the same definition.
-// The database uses different IDs from the values the NBT uses. The one from Region-Types isn't interchangeable.
-// edit: maybe those are just wrong altogether then, and maybe this is the only one for Bedrock?
-export enum Dimension {
-  overworld = 0,
-  nether,
-  end
 }
 
 export function readKey(key: Buffer): Key {
@@ -104,9 +97,9 @@ export function readChunkKey<K extends keyof ChunkKeyNameMap>(key: Buffer): Chun
 
   const x = view.getInt32(0,true);
   const y = view.getInt32(4,true);
-  const dimension: Dimension = key.byteLength < 12 ? Dimension.overworld : view.getInt32(8,true);
-  const type = view.getUint8(dimension === Dimension.overworld ? 8 : 12);
-  const subchunk: number | null = type === CHUNK_KEY.SubChunkPrefix ? view.getInt8(dimension === Dimension.overworld ? 9 : 13) : null;
+  const dimension: DimensionID = key.byteLength < 12 ? DimensionID.overworld : view.getInt32(8,true);
+  const type = view.getUint8(dimension === DimensionID.overworld ? 8 : 12);
+  const subchunk: number | null = type === CHUNK_KEY.SubChunkPrefix ? view.getInt8(dimension === DimensionID.overworld ? 9 : 13) : null;
 
   // if (type === CHUNK_KEY.SubChunkPrefix){
   //   console.log(key);
@@ -336,7 +329,7 @@ export interface ChunkKeyEntry<K extends keyof ChunkKeyNameMap = keyof ChunkKeyN
   x: number;
   y: number;
   type: K;
-  dimension: Dimension;
+  dimension: DimensionID;
   subchunk: number | null;
   // value: ChunkKeyNameMap[K];
 }
@@ -629,7 +622,7 @@ export interface VillagePoiInstance {
 export interface Map {
   colors: ByteArrayTag;
   decorations: object[];
-  dimension: ByteTag<Dimension>;
+  dimension: ByteTag<DimensionID>;
   fullyExplored: BooleanTag;
   height: ShortTag;
   mapId: LongTag;
@@ -651,7 +644,7 @@ export interface Portals {
 }
 
 export interface PortalRecord {
-  DimId: IntTag<Dimension>;
+  DimId: IntTag<DimensionID>;
   Span: ByteTag;
   TpX: IntTag;
   TpY: IntTag;
@@ -685,7 +678,7 @@ export interface DragonFight {
 }
 
 export interface TickingArea {
-  Dimension: IntTag<Dimension>;
+  Dimension: IntTag<DimensionID>;
   IsCircle: BooleanTag;
   MaxX: IntTag;
   MaxZ: IntTag;
@@ -696,7 +689,7 @@ export interface TickingArea {
 }
 
 export interface PosTrackDB {
-  dim: IntTag<Dimension>;
+  dim: IntTag<DimensionID>;
   id: StringTag;
   pos: [IntTag, IntTag, IntTag];
   status: ByteTag; // `BooleanTag`?
