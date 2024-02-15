@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
-import { DimensionID, readDatabase } from "../src/index.js";
+import { DimensionID } from "../Region-Types/src/bedrock/index.js";
+import { readDatabase } from "../src/index.js";
 
 const WORLD = fileURLToPath(new URL("../test/world/My World/db",import.meta.url));
 
