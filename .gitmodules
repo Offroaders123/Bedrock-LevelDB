@@ -1,6 +1,3 @@
-[submodule "NBTify"]
-	path = NBTify
-	url = https://github.com/Offroaders123/NBTify.git
 [submodule "Region-Types"]
 	path = Region-Types
 	url = https://github.com/Offroaders123/Region-Types

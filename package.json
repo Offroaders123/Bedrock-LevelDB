@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "leveldb-zlib": "^1.2.0",
-    "nbtify": "file:NBTify"
+    "nbtify": "^1.90.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
