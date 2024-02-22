@@ -1,8 +1,8 @@
 import { LevelDB } from "leveldb-zlib";
-import { DimensionID } from "../Region-Types/src/bedrock/index.js";
+import { DimensionID } from "../Region-Types/dist/bedrock/index.js";
 import { readEntry } from "./entry.js";
 
-import type { ChunkKeyNameMap, WorldKeyNameMap, SuffixKeyNameMap } from "../Region-Types/src/bedrock/index.js";
+import type { ChunkKeyNameMap, WorldKeyNameMap, SuffixKeyNameMap } from "../Region-Types/dist/bedrock/index.js";
 
 declare module "leveldb-zlib" {
   // @ts-ignore
