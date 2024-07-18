@@ -6,10 +6,10 @@ import type { ActorDigestVersion, ActorPrefix, AutonomousEntities, BiomeData, Bi
 
 export type Entry = [Key, Value];
 
-export async function readEntry(entry: [Buffer, Buffer]): Promise<Entry> {
+export async function readEntry(entry: [Buffer, Buffer]): Promise<Key> {
   const key: Key = readKey(entry[0]);
-  const value: Value = await readValue(key,entry[1]);
-  return [key,value];
+  // const value: Value = await readValue(key,entry[1]);
+  return key;
 }
 
 export function readKey(key: Buffer): Key {
@@ -53,17 +53,17 @@ export function readSuffixKey(key: Buffer): SuffixKeyEntry | null {
   }
 
   switch (keyType){
-    case "actorprefix": return { type: keyType, key };
-    case "digp": return { type: keyType, key };
-    case "posTrackDB": return { type: keyType, key };
-    case "player": return { type: keyType, key };
-    case "player_server": return { type: keyType, key };
-    case "tickingarea": return { type: keyType, key };
-    case "VILLAGE_DWELLERS": return { type: keyType, key };
-    case "VILLAGE_INFO": return { type: keyType, key };
-    case "VILLAGE_PLAYERS": return { type: keyType, key };
-    case "VILLAGE_POI": return { type: keyType, key };
-    case "map": return { type: keyType, key };
+    case "actorprefix":
+    case "digp":
+    case "posTrackDB":
+    case "player":
+    case "player_server":
+    case "tickingarea":
+    case "VILLAGE_DWELLERS":
+    case "VILLAGE_INFO":
+    case "VILLAGE_PLAYERS":
+    case "VILLAGE_POI":
+    case "map": return `${keyType}@0x${key.subarray(keyType.length).toString("hex")}`;
     default: return null;
   }
 }
