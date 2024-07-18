@@ -4,18 +4,6 @@ import { readEntry } from "./entry.js";
 
 import type { ChunkKeyNameMap, WorldKeyNameMap, SuffixKeyNameMap } from "../Region-Types/dist/bedrock/index.js";
 
-declare module "leveldb-zlib" {
-  // @ts-ignore
-  export class LevelDB {
-    [Symbol.asyncIterator](): ReturnType<Iterator[typeof Symbol.asyncIterator]>;
-  }
-
-  // @ts-ignore
-  export class Iterator {
-    [Symbol.asyncIterator](): AsyncGenerator<[Buffer, Buffer], void, void>;
-  }
-}
-
 export type Entries = {
   overworld: Chunk[];
   nether: Chunk[];
