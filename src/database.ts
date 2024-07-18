@@ -38,7 +38,7 @@ export async function readDatabase(path: string): Promise<Entries> {
   //   console.log(key);
   // }
 
-  for await (const entry of db.getIterator()){
+  for await (const entry of (db.getIterator() as AsyncIterable<[Buffer, Buffer]>)){
     const result = await readEntry(entry);
     // console.log(result);
 
