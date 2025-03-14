@@ -104,13 +104,7 @@ export async function readDatabase(path: string): Promise<Key[]> {
   // }
 
   for (const entry of Object.entries(db.keys)){
-    const key: Buffer = Buffer.from(entry[0]);
-    const value: Buffer = typeof entry[1] === "object" ? Buffer.from(entry[1].value!) : Buffer.from([Number(entry[1]!)]);
-    const result = await readEntry([key, value]).catch(() => null);
-    if (result === null) {
-      console.log("UNHANDLED KEY", key);
-      continue;
-    }
+    const result = await readEntry(entry);
     // console.log(result);
     entries.push(result);
   }

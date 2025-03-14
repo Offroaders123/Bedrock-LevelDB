@@ -3,29 +3,33 @@ import { CHUNK_KEY, DimensionID } from "../Region-Types/dist/bedrock/index.js";
 
 import type { NBTData, ReadOptions, RootTagLike } from "nbtify";
 import type { ActorDigestVersion, ActorPrefix, AutonomousEntities, BiomeData, BiomeState, BlendingBiomeHeight, BlendingData, BlockEntities, BlockEntity, BorderBlocks, CheckSums, ChunkKey, ChunkKeyEntry, ChunkKeyNameMap, ChunkValue, ConversionData, Data2D, Data2DLegacy, Data3D, DigP, Entities, Entity, FinalizedState, GameFlatWorldLayers, GeneratedPreCavesAndCliffsBlending, GenerationSeed, HardcodedSpawners, Key, LegacyBlockExtraData, LegacyDimension0, LegacyDimension1, LegacyMVillages, LegacyTerrain, LegacyVersion, LevelChunkMetaDataDictionary, LevelChunkMetaDataDictionaryEntry, LevelChunkMetaDataDictionaryTag, LocalPlayer, Map, MetaDataHash, MobEvents, Nether, Overworld, PendingTick, PendingTicks, PlayerServer, PlayerServerDef, Portals, PosTrackDB, PositionTrackDBLastId, RandomTick, RandomTicks, SchedulerWT, Scoreboard, SubChunkPrefix, SuffixKey, SuffixKeyEntry, SuffixKeyNameMap, SuffixValue, TheEnd, TickingArea, Value, Version, VillageDwellers, VillageInfo, VillagePlayers, VillagePois, WorldKey, WorldKeyNameMap, WorldValue } from "../Region-Types/dist/bedrock/index.js";
+import type LevelKeyValue from "./ldb/minecraft/LevelKeyValue.js";
 
 export type Entry = [Key, Value];
 
-export async function readEntry(entry: [Buffer, Buffer]): Promise<Key> {
-  const key: Key = readKey(entry[0]);
+export async function readEntry(entry: [string, false | LevelKeyValue | undefined]): Promise<Key> {
+  const key: Key = readKey(Buffer.from(entry[0]));
   // const value: Value = await readValue(key,entry[1]);
   return key;
 }
 
 export function readKey(key: Buffer): Key {
   const suffixKey = readSuffixKey(key);
+  console.log(suffixKey);
   if (suffixKey !== null) return suffixKey;
   // console.log(stringy);
 
   const worldKey = readWorldKey(key);
+  console.log(worldKey);
   if (worldKey !== null) return worldKey;
 
   // console.log(key)//,stringy);
 
   const chunkKey = readChunkKey(key);
+  console.log(chunkKey);
   if (chunkKey !== null) return chunkKey;
 
-  throw new Error(`Encountered unknown key type, '${key.toString("utf-8")}'.`);
+  throw new Error(`Encountered unknown key type, '${key.toString("hex")}'.`);
 }
 
 export function readSuffixKey<K extends keyof SuffixKeyNameMap>(key: Buffer): SuffixKeyEntry<K> | null;
@@ -103,6 +107,8 @@ export function readChunkKey(key: Buffer): ChunkKeyEntry | null {
   const dimension: DimensionID = key.byteLength < 12 ? DimensionID.overworld : view.getInt32(8,true);
   const type = view.getUint8(dimension === DimensionID.overworld ? 8 : 12);
   const subchunk: number | null = type === CHUNK_KEY.SubChunkPrefix ? view.getInt8(dimension === DimensionID.overworld ? 9 : 13) : null;
+
+  console.log(key, x, y, dimension, type, subchunk, CHUNK_KEY[type]);
 
   // if (type === CHUNK_KEY.SubChunkPrefix){
   //   console.log(key);
