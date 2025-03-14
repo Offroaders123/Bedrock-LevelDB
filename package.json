@@ -11,10 +11,12 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "nbtify": "^1.90.0"
+    "nbtify": "^1.90.0",
+    "pako": "^2.0.4"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
+    "@types/pako": "^1.0.2",
     "typescript": "^5.3.3"
   }
 }

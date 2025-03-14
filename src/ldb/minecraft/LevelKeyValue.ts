@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { getAsciiString } from "../core/Utilities";
-import Varint from "./Varint";
+import { getAsciiString } from "../core/Utilities.js";
+import Varint from "./Varint.js";
 
 export default class LevelKeyValue {
   fileBytes: Uint8Array | undefined;

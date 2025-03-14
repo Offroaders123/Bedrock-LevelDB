@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type IFile from "../storage/IFile";
+import type IFile from "../storage/IFile.js";
 import pako from "pako";
-import Log from "../core/Log";
-import LevelKeyValue from "./LevelKeyValue";
-import Varint from "./Varint";
-import { getUnsignedInteger, getUnsignedShort } from "../core/DataUtilities";
-import { getAsciiStringFromUint8Array } from "../core/Utilities";
-import type { IErrorMessage, IErrorable } from "../core/IErrorable";
-import type ILevelDbFileInfo from "./ILevelDbFileInfo";
+import { error, assert } from "../core/Log.js";
+import LevelKeyValue from "./LevelKeyValue.js";
+import Varint from "./Varint.js";
+import { getUnsignedInteger, getUnsignedShort } from "../core/DataUtilities.js";
+import { getAsciiStringFromUint8Array } from "../core/Utilities.js";
+import type { IErrorMessage, IErrorable } from "../core/IErrorable.js";
+import type ILevelDbFileInfo from "./ILevelDbFileInfo.js";
 
 export default class LevelDb implements IErrorable {
   ldbFiles: IFile[];
@@ -60,7 +60,7 @@ export default class LevelDb implements IErrorable {
       contextOut = this.context;
     }
 
-    Log.error(message + (contextOut ? " " + contextOut : ""));
+    error(message + (contextOut ? " " + contextOut : ""));
 
     this.errorMessages.push({
       message: message,
@@ -101,7 +101,7 @@ export default class LevelDb implements IErrorable {
           let level = 0;
 
           if (this.newFileLevel && this.newFileNumber) {
-            Log.assert(this.newFileLevel.length === this.newFileNumber.length);
+            assert(this.newFileLevel.length === this.newFileNumber.length);
 
             if (this.newFileLevel.length === this.newFileNumber.length) {
               for (let j = 0; j < this.newFileNumber.length; j++) {
