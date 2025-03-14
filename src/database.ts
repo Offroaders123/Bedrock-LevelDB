@@ -1,4 +1,3 @@
-import { LevelDB } from "leveldb-zlib";
 import { readEntry } from "./entry.js";
 
 import type { Key } from "../Region-Types/dist/bedrock/index.js";
