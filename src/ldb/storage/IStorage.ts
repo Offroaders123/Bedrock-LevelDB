@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import IFolder from "./IFolder";
-import IFile from "./IFile";
-import { IEvent } from "ste-events";
+import type IFolder from "./IFolder.js";
+import type IFile from "./IFile.js";
+import type { IEvent } from "ste-events";
 
 export enum StorageErrorStatus {
   none = 0,

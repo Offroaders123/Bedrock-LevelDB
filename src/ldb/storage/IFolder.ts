@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { IEvent } from "ste-events";
-import IFile from "./IFile";
-import IStorage, { IFolderMove } from "./IStorage";
-import IStorageObject from "./IStorageObject";
+import type { IEvent } from "ste-events";
+import type IFile from "./IFile.js";
+import type { default as IStorage, IFolderMove } from "./IStorage.js";
+import type IStorageObject from "./IStorageObject.js";
 
 export enum FolderErrorStatus {
   none = 0,

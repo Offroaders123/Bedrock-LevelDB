@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import IFolder from "./IFolder";
-import IStorage from "./IStorage";
-import IStorageObject from "./IStorageObject";
-import { EncodingType } from "./StorageUtilities";
+import type IFolder from "./IFolder.js";
+import type IStorage from "./IStorage.js";
+import type IStorageObject from "./IStorageObject.js";
+import type { EncodingType } from "./StorageUtilities.js";
 
 export default interface IFile extends IStorageObject {
   modified: Date | null;

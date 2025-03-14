@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import type IFile from "../storage/IFile.js";
-import pako from "pako";
+import { inflate } from "pako";
 import { error, assert } from "../core/Log.js";
 import LevelKeyValue from "./LevelKeyValue.js";
 import Varint from "./Varint.js";
@@ -217,14 +217,14 @@ export default class LevelDb implements IErrorable {
 
     // I believe this logic replicates: https://twitter.com/_tomcc/status/894294552084860928
     try {
-      indexContent = pako.inflate(indexContentCompressed, { raw: true });
+      indexContent = inflate(indexContentCompressed, { raw: true });
     } catch (e) {
       //      Log.fail("Error inflating index compressed content: " + e);
     }
 
     if (!indexContent) {
       try {
-        indexContent = pako.inflate(indexContentCompressed);
+        indexContent = inflate(indexContentCompressed);
       } catch (e) {
         // Log.verbose("Error inflating index content: " + e + ". Further content may fail to load.", this.context);
       }
@@ -271,12 +271,12 @@ export default class LevelDb implements IErrorable {
           let blockContent = undefined;
 
           try {
-            blockContent = pako.inflate(blockContentCompressed, { raw: true });
+            blockContent = inflate(blockContentCompressed, { raw: true });
           } catch (e) {}
 
           if (!blockContent) {
             try {
-              blockContent = pako.inflate(blockContentCompressed);
+              blockContent = inflate(blockContentCompressed);
             } catch (e) {
               // Apparently, some content is just not compressed, so failing to decompress is an acceptable state.
               // Log.fail("Error inflating block content: " + e);
